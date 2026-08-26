@@ -46,7 +46,10 @@ your-existing-host.example.com:8443 {
 		header_up X-Real-IP {remote_host}
 	}
 
-	log {
-		output file /var/log/caddy/precedent-engine.log
-	}
+	# NO `log { output file ... }` here on purpose. Caddy's systemd unit
+	# sandboxes which paths the process may write, and that view is fixed when
+	# it STARTS — so `caddy validate` passes (it never opens the file) and then
+	# the reload fails with "permission denied", even when the directory exists
+	# and is owned by caddy. Fixing it needs a restart, which drops every other
+	# site on the box. Requests still land in the journal: journalctl -u caddy
 }
