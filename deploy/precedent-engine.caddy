@@ -1,15 +1,43 @@
 # A Caddy site block for the memory engine — a FRAGMENT, not a whole config.
 #
-# APPEND it; never overwrite /etc/caddy/Caddyfile. That box already serves other
-# sites, and replacing the file would take them down.
+# APPEND it; never overwrite /etc/caddy/Caddyfile. The box may already serve
+# other sites, and replacing the file would take them down.
 #
+#   sudo cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak   # always
 #   sudo tee -a /etc/caddy/Caddyfile < deploy/precedent-engine.caddy
 #   sudo caddy validate --config /etc/caddy/Caddyfile
 #   sudo systemctl reload caddy
 #
-# Point an A record at the box first; Caddy then gets a certificate on its own.
+# ── THE SITE ADDRESS MUST BE UNIQUE ──────────────────────────────────────────
+# Two blocks for the same hostname is an "ambiguous site definition": validate
+# fails and the reload is refused (which does at least leave the running config
+# untouched). Check what is already served first:
+#
+#   grep -E '^[a-z0-9.*-]+[[:space:]]*\{' /etc/caddy/Caddyfile
+#
+# Pick ONE of these:
+#
+#  A. A subdomain you control — engine.your-domain.com, A record → this box.
+#     Not possible on an auto-assigned *.cloudapp.azure.com name: you do not
+#     own that zone and cannot add a subdomain to it.
+#
+#  B. The SAME hostname on a different port (below). A distinct port makes a
+#     distinct site, so nothing else has to change — but open the port in your
+#     firewall / cloud security group, and put the port in ENGINE_URL.
+#
+#  C. A path prefix inside the EXISTING block, if you would rather not open a
+#     port. This is an edit to that block, not an append:
+#
+#       handle_path /engine/* {
+#           reverse_proxy 127.0.0.1:8787
+#       }
+#
+# ─────────────────────────────────────────────────────────────────────────────
 
-engine.your-domain.com {
+# The hostname is REQUIRED, even here: a bare ":8443" serves plain HTTP, and
+# Caddy only issues a certificate for a site address that names a host. Vercel
+# sends the API key on every call, so this must be TLS.
+your-existing-host.example.com:8443 {
 	encode zstd gzip
 
 	# the engine listens on localhost only; this is just the TLS front door.
