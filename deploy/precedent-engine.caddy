@@ -1,0 +1,24 @@
+# A Caddy site block for the memory engine — a FRAGMENT, not a whole config.
+#
+# APPEND it; never overwrite /etc/caddy/Caddyfile. That box already serves other
+# sites, and replacing the file would take them down.
+#
+#   sudo tee -a /etc/caddy/Caddyfile < deploy/precedent-engine.caddy
+#   sudo caddy validate --config /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+#
+# Point an A record at the box first; Caddy then gets a certificate on its own.
+
+engine.your-domain.com {
+	encode zstd gzip
+
+	# the engine listens on localhost only; this is just the TLS front door.
+	# Authentication is the X-API-Key the engine checks itself.
+	reverse_proxy 127.0.0.1:8787 {
+		header_up X-Real-IP {remote_host}
+	}
+
+	log {
+		output file /var/log/caddy/precedent-engine.log
+	}
+}

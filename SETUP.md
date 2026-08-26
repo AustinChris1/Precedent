@@ -173,17 +173,28 @@ Vercel. In production the engine runs as a systemd service.
 ### A. The app on Vercel
 
 1. Push the repo to GitHub, then **New Project** on Vercel and import it.
-2. Set **Root Directory** to `web`. This is the one setting that matters — the
-   Next app is not at the repo root.
-3. Framework preset: Next.js (detected). Build command and output: defaults.
-4. Add two **Environment Variables**:
+2. Vercel will detect **two** deployable directories: `web` (Next.js) and the
+   repo root (FastAPI, because `requirements.txt` is there).
+
+   > **Deploy `web` only.** Deploying the FastAPI one puts the memory engine on
+   > serverless, where the filesystem is wiped between cold starts — it would
+   > erase `memory.db` continuously. Do not create a project for it.
+
+3. Confirm **Root Directory** is `web`. This is the one setting that matters —
+   the Next app is not at the repo root.
+4. Framework preset: Next.js (detected). Build command and output: defaults.
+5. Add two **Environment Variables** (placeholders are fine until the VPS is up):
 
    | Name | Value |
    |---|---|
    | `ENGINE_URL` | `https://engine.your-domain.com` |
    | `ENGINE_API_KEY` | the same secret the engine uses |
 
-5. Deploy.
+6. Deploy.
+
+The landing page and docs work immediately — they are static. The console will
+report **engine offline** until step B is done and `ENGINE_URL` points at the
+VPS; that is expected, not a failed deploy.
 
 [`web/vercel.json`](web/vercel.json) is committed and sets security headers plus
 `no-store` on `/api/*`. You do not need to configure anything else.
@@ -227,13 +238,19 @@ plus a single `ReadWritePaths=/var/lib/precedent`, so a compromised engine can
 write nowhere else on the box.
 
 **TLS.** Vercel must reach the engine over HTTPS. Point an A record at the VPS,
-then:
+then add a Caddy site block. If the box already serves other sites — and it
+probably does — **append, never overwrite**, or you will take them down:
 
 ```bash
-sudo apt install caddy
-sudo cp deploy/Caddyfile /etc/caddy/Caddyfile   # edit the hostname first
+sudo apt install caddy                      # skip if already installed
+# edit the hostname in the fragment first
+sudo tee -a /etc/caddy/Caddyfile < deploy/precedent-engine.caddy
+sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 ```
+
+`deploy/precedent-engine.caddy` is a **fragment**, not a full config, precisely
+so it cannot clobber an existing one.
 
 Caddy obtains a certificate automatically. Confirm end to end:
 
@@ -245,6 +262,64 @@ If that returns JSON, set `ENGINE_URL` on Vercel to that host and redeploy. The
 console header will read **memory engine online**.
 
 ---
+
+#### Sizing (measured 2026-08-26)
+
+The engine is small, but these boxes are ~842 MB, so it is worth being exact:
+
+| | measured |
+|---|---|
+| Resident memory | **~50 MB** (after 20 incidents, a curation run, 20 reads) |
+| Database on disk | **364 KB** with 20 counterparties on file |
+| Response sizes | 99 B – 11 KB; a full console session ~15 KB |
+
+Pick the **idle** box. On a host already at load ~2 with ~100 MB available, an
+extra 50 MB competes with whatever is running there — and the thing that gets
+OOM-killed may be your other service, not this one. A box at load 0 with ~250 MB
+free absorbs it without noticing.
+
+Two practical notes for an existing box:
+
+- If **Caddy is already installed and serving other sites**, append the site
+  block (above) — do not replace the Caddyfile.
+- Both of the boxes here report *"System restart required"* (pending kernel
+  updates). Reboot before installing, not after, so the engine is not the thing
+  that gets interrupted.
+
+### B2. Or the engine on Render (managed, but paid)
+
+Render works **only on a paid instance with a persistent disk**. Their docs name
+our exact failure for free instances: *"local SQLite databases ... are lost every
+time the service redeploys, restarts, or spins down"* — and free services spin
+down after 15 minutes of inactivity. That is the deletion test running against
+you on a timer.
+
+On a paid plan it is a clean fit, and [`render.yaml`](render.yaml) is committed:
+
+1. Render → **New → Blueprint**, point it at the repo. It reads `render.yaml`.
+2. It provisions the service with a 1 GB disk at `/var/data`, sets
+   `PRECEDENT_DB=/var/data/memory.db` (the file **must** live under the mount
+   path or it is ephemeral again), and generates `PRECEDENT_API_KEY`.
+3. Copy that generated key into Vercel as `ENGINE_API_KEY`, and set `ENGINE_URL`
+   to the service URL Render gives you (`https://<name>.onrender.com`).
+
+Two differences from the VPS setup, both already handled in the blueprint:
+
+- Render routes to `$PORT` and requires binding `0.0.0.0`, whereas the systemd
+  unit binds `127.0.0.1` behind Caddy.
+- The engine is **publicly reachable** on Render, so `PRECEDENT_API_KEY` is not
+  optional there — without it, anyone could write to your bureau's memory.
+
+Check current Render pricing yourself before committing: their pricing page is
+JavaScript-rendered and I could not read it, so I am not quoting numbers.
+
+Cost comparison, since you already own a VPS:
+
+| Option | Cost | Notes |
+|---|---|---|
+| **Your 2 GB VPS** | $0 | You already pay for it. Recommended. |
+| Render paid + disk | paid monthly | Managed, less setup, brief downtime on each redeploy |
+| Render free | $0 | **Does not work.** Memory is erased on idle/restart. |
 
 ### C. If you would rather not run two hosts
 

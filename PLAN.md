@@ -10,7 +10,11 @@
 
 **Probe cost: $0.21 for the whole campaign** — measured, not estimated. `node web/scripts/plan-probes.mjs` selects 15 live agents (5 per category, deduped) and prices 30 jobs at **$0.208 USDC**. Live agents are therefore affordable outright; sandbox is still the first stop on Sep 2 for wiring, but the headline data comes from real counterparties.
 
-**Registry census** (`node web/scripts/acp-census.mjs`, run 2026-08-23): **1,303 agents, 3,929 offerings**. Median offering price $0.10; 3,136 offerings are ≤$1. Every single offering publishes a deliverable JSON Schema, a requirements schema, and an SLA — so probes are graded against the provider's **own contract**, never our taste. And **only 4.5% of agents carry any rating at all**: that is the market gap Precedent fills, and it is a verifiable PMF artifact rather than a claim.
+**Registry census** (`node web/scripts/acp-census.mjs`, re-run 2026-08-25 with corrected schema detection): **1,306 agents, 3,990 offerings** reachable through registry *search* — a floor, not the whole registry. Median offering price $0.10; 3,190 are ≤$1. Every offering declares a price and an SLA, but **only 993 (25%) publish a real deliverable JSON Schema** — 2,938 put prose there instead ("Detailed review report with issues and fixes"), which is truthy but carries no machine-checkable constraint.
+
+That split drives the grading design: *ghosted*, *late* and *price drift* are provable against any priced offering; *malformed* needs a real schema. So targets are graded **strict** (schema, all five breach types) or **basic** (three of five). Requiring a schema would have discarded three quarters of the market for no gain on the breaches that do not need one.
+
+**4.5% of agents carry a `rating` field** — meaning no rating is exposed at the point of hiring, not that the agent never worked. That is the gap Precedent fills, and it is reproducible rather than asserted.
 
 | Day | Goal |
 |---|---|
@@ -56,6 +60,36 @@ around it:
 3. write the outcome as an incident with the real ACP job id as `job_ref`
 
 Do not claim the evaluator role in the README until a real job has been evaluated.
+
+## Chain choice: Sepolia to build, mainnet for the artifact
+
+Anchoring is a 32-byte hash, not storage — cost was never a reason to prefer
+testnet (Base mainnet calldata is a fraction of a cent).
+
+- **Base Sepolia** while wiring viem and debugging the transaction. Free.
+- **Base mainnet** for anything a judge opens. A testnet anchor proves little:
+  testnets are reset and pruned, so it cannot show the record existed and was
+  not rewritten — which is the anchor's only job. The probe wallet is funded on
+  mainnet anyway.
+
+**Unverified:** whether the rules accept testnet for the Base multiplier. The
+wording is "executed on-chain action". Confirm at the Base workshop (Sep 5–7)
+and default to mainnet regardless, since it costs cents.
+
+## Engine bandwidth (measured 2026-08-25)
+
+Not a constraint. JSON only — images, fonts and bundles are all served by Vercel:
+
+| Endpoint | Bytes |
+|---|---|
+| `/health` | 99 |
+| `/underwrite` | 451 |
+| `/dossier/{id}` | 621 |
+| `/agents` | 1,472 |
+| `/journal?limit=40` | 11,375 |
+
+A full console session is ~15KB, so 1,000 visitors is ~20MB and a 10-minute
+keep-alive ping costs 0.4MB/month. The VPS is the right home for the engine.
 
 ## Hosting ($0 total)
 

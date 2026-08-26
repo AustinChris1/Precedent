@@ -1,0 +1,36 @@
+# Deploy the Precedent memory engine on Render.
+#
+# Only the ENGINE lives here. The Next app goes to Vercel (root directory
+# `web/`), because it is stateless and Vercel is free.
+#
+# A PAID plan is mandatory. Render's free instances have an ephemeral
+# filesystem — their docs name our exact case: "local SQLite databases ... are
+# lost every time the service redeploys, restarts, or spins down". That would
+# delete the product's memory on a 15-minute idle timer.
+services:
+  - name: precedent-engine
+    type: web
+    runtime: python
+    # disks require a paid instance; free cannot attach one
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    # Render routes to $PORT and requires binding 0.0.0.0, unlike the systemd
+    # unit in deploy/ which binds localhost behind a reverse proxy
+    startCommand: uvicorn precedent.server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+
+    # the whole point: memory.db must sit UNDER the mount path to survive
+    disk:
+      name: precedent-memory
+      mountPath: /var/data
+      sizeGB: 1
+
+    envVars:
+      - key: PRECEDENT_DB
+        value: /var/data/memory.db
+      # the engine is publicly reachable here, so this is not optional.
+      # Render generates it; copy the value into Vercel as ENGINE_API_KEY.
+      - key: PRECEDENT_API_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.12.4"
