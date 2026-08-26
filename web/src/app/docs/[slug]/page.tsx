@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getDoc, getDocSlugs } from "@/lib/docs";
 import { FlowArt, TiersArt, FlipArt, MarketArt } from "@/components/art";
-import { Photo, PhotoCredits, type PhotoName } from "@/components/Photo";
+import { Photo,  type PhotoName } from "@/components/Photo";
 
 export async function generateStaticParams() {
   return (await getDocSlugs()).map((slug) => ({ slug }));
@@ -87,7 +87,6 @@ export default async function DocPage(props: PageProps<"/docs/[slug]">) {
 
       <div className="doc-prose" dangerouslySetInnerHTML={{ __html: doc.html }} />
 
-      <PhotoCredits className="mt-14 border-t border-line pt-6" />
 
       {slug === "overview" && (
         <figure className="glass mt-10 rounded-2xl p-6">

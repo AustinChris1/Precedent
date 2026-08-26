@@ -18,7 +18,6 @@ import {
   Store,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { PhotoCredits } from "@/components/Photo";
 import { Counter, LiftCard, MaskedLines, Reveal, Stagger, staggerItem } from "@/components/motion";
 
 const STATS = [
@@ -361,7 +360,6 @@ export default function Home() {
             <span className="font-display">Precedent</span>
             <span className="text-xs text-fg-faint">· Sibyl Labs Hackathon 2026</span>
           </span>
-          <PhotoCredits className="max-w-sm" />
         </div>
       </footer>
     </div>

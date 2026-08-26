@@ -77,28 +77,3 @@ export function Photo({
   );
 }
 
-/** CC BY requires naming the photographer and the licence. */
-export function PhotoCredits({ className = "" }: { className?: string }) {
-  return (
-    <div className={`text-xs leading-relaxed text-fg-faint ${className}`}>
-      <p className="mb-1.5">Photography</p>
-      <ul className="space-y-1">
-        {CREDITS.map((c) => (
-          <li key={c.name}>
-            <a href={c.source} target="_blank" rel="noreferrer" className="hover:text-fg-muted">
-              {c.title?.slice(0, 60) || c.name}
-            </a>{" "}
-            by{" "}
-            <a href={c.creator_url} target="_blank" rel="noreferrer" className="hover:text-fg-muted">
-              {c.creator}
-            </a>{" "}
-            ·{" "}
-            <a href={c.license_url} target="_blank" rel="noreferrer" className="hover:text-fg-muted">
-              CC {c.license}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
