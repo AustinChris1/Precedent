@@ -61,6 +61,29 @@ around it:
 
 Do not claim the evaluator role in the README until a real job has been evaluated.
 
+## Probe runner: never record what you cannot verify (added 2026-08-26)
+
+The ACP API went down during deployment — returning
+`{"message":"searchAgents error Request failed with status code 503"}` wrapped as
+a 500, for roughly 40 minutes. It will do this again during Sep 1–10.
+
+**The risk:** a probe that gets no deliverable looks identical to a probe whose
+platform was broken. Recording that as `ghosted` (-25) writes a false accusation
+into a permanent dossier — and it compounds: the score drops, the decision
+becomes a binding ruling, and the observed breach rate rewrites the charter for
+every other counterparty. One outage could poison the whole bureau.
+
+**The rule:** before writing ANY breach, confirm ACP was reachable at the moment
+of judgement. If the platform errored, record nothing and mark the probe
+`inconclusive`. Retry later; an absent outcome is honest, a fabricated one is not.
+
+Concretely for the runner:
+- health-check the ACP API immediately before and after each probe window
+- `ghosted` requires a successful platform round-trip that returned no deliverable
+- log inconclusive probes so the campaign can resume, and so the count is visible
+- `web/src/lib/registry.ts` already retries twice and raises
+  `RegistryUnavailableError` rather than a bare status — reuse that signal
+
 ## Chain choice: Sepolia to build, mainnet for the artifact
 
 Anchoring is a 32-byte hash, not storage — cost was never a reason to prefer

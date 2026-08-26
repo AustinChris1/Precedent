@@ -6,6 +6,7 @@ import {
   liveness,
   gradeLevel,
   RegistryUnavailableError,
+  searchDirectory,
 } from "@/lib/registry";
 import {
   PROBE_CATEGORIES,
@@ -61,7 +62,36 @@ export async function GET(req: Request) {
     const q = url.searchParams.get("q");
     if (!q) return NextResponse.json({ error: "q is required" }, { status: 422 });
 
-    const agents = await searchAgents(q, Number(url.searchParams.get("topK") ?? 24));
+    let agents;
+    try {
+      agents = await searchAgents(q, Number(url.searchParams.get("topK") ?? 24));
+    } catch (err) {
+      if (!(err instanceof RegistryUnavailableError)) throw err;
+      // ACP search is down but the rest of their stack is not — fall back to the
+      // public directory. Live data, fewer fields: no SLA, no deliverable schema,
+      // so grading and probe planning are deliberately withheld in this mode.
+      const directory = await searchDirectory(q, Number(url.searchParams.get("topK") ?? 24));
+      return NextResponse.json({
+        degraded: true,
+        notice:
+          "ACP's search API is down, so this is the public directory instead: live, but without " +
+          "the SLA and schema each offering publishes. Grading and probe planning need those, " +
+          "so they are unavailable until search recovers.",
+        agents: directory.map((a) => ({
+          id: a.id,
+          name: a.name,
+          walletAddress: a.walletAddress,
+          cluster: a.cluster,
+          rating: a.rating,
+          liveness: liveness(a.lastActiveAt),
+          offerings: [],
+          strictCount: 0,
+          probeableCount: 0,
+          offeringCount: a.offeringCount,
+          cheapestUsd: a.cheapestUsd,
+        })),
+      });
+    }
     return NextResponse.json({
       agents: agents.map((a) => {
         const offerings = (a.offerings ?? []).map((o) => ({

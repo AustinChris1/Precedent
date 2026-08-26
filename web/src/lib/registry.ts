@@ -132,6 +132,64 @@ export async function searchAgents(query: string, topK = 100): Promise<AcpAgentR
 
 const sleep = (ms: number) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
 
+/**
+ * Fallback: the public ACP directory.
+ *
+ * When `/agents/search` is down — as it was for hours on 2026-08-26, returning
+ * its own downstream's 503 — the rest of the ACP stack keeps working. Their web
+ * UI reads agents from a Strapi API on a different host, and so can we.
+ *
+ * The catch, and why this is a DEGRADED view rather than a swap: the directory's
+ * `offerings` column carries only `name`, `price`, `priceUsd`. No `slaMinutes`,
+ * no `deliverable` schema. Those two fields are what every grading decision is
+ * made against, so a directory record can be listed and underwritten but must
+ * NEVER be used to plan a probe campaign — hence selectTargets does not call it.
+ */
+const DIRECTORY = "https://acpx.virtuals.io/api/agents";
+
+type DirectoryOffering = { name?: string; price?: number; priceUsd?: number };
+
+export type DirectoryAgent = {
+  id: string;
+  name: string;
+  walletAddress: string;
+  cluster: string | null;
+  rating: number | null;
+  lastActiveAt: string | null;
+  offeringCount: number;
+  cheapestUsd: number | null;
+};
+
+export async function searchDirectory(query: string, limit = 24): Promise<DirectoryAgent[]> {
+  const params = new URLSearchParams();
+  params.set("pagination[pageSize]", String(limit));
+  params.set("pagination[page]", "1");
+  if (query.trim()) params.set("filters[name][$containsi]", query.trim());
+
+  const res = await fetch(`${DIRECTORY}?${params}`, {
+    headers: { origin: "https://app.virtuals.io" },
+  });
+  if (!res.ok) throw new RegistryUnavailableError(res.status);
+
+  const body = (await res.json()) as { data?: Record<string, unknown>[] };
+  return (body.data ?? []).map((r) => {
+    const offerings = (r.offerings as DirectoryOffering[] | undefined) ?? [];
+    const prices = offerings
+      .map((o) => Number(o.priceUsd ?? o.price))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    return {
+      id: String(r.id ?? r.documentId ?? ""),
+      name: String(r.name ?? "unnamed"),
+      walletAddress: String(r.walletAddress ?? ""),
+      cluster: (r.cluster as string | null) ?? null,
+      rating: (r.rating as number | null) ?? null,
+      lastActiveAt: (r.lastActiveAt as string | null) ?? null,
+      offeringCount: offerings.length,
+      cheapestUsd: prices.length ? Math.min(...prices) : null,
+    };
+  });
+}
+
 export type SelectionOptions = {
   /** Skip anything pricier than this. Probes are meant to be cheap. */
   maxPriceUsdc?: number;

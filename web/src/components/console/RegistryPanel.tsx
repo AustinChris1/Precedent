@@ -24,6 +24,9 @@ type Agent = {
   offerings: Offering[];
   strictCount: number;
   probeableCount: number;
+  /** present only in degraded (directory) mode */
+  offeringCount?: number;
+  cheapestUsd?: number | null;
 };
 
 export type PickedAgent = { id: string; name: string; walletAddress: string };
@@ -49,6 +52,7 @@ type Plan = {
 export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => void }) {
   const [q, setQ] = useState("data");
   const [agents, setAgents] = useState<Agent[] | null>(null);
+  const [degraded, setDegraded] = useState<string | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -59,8 +63,11 @@ export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => voi
     setLoading(true);
     setError(null);
     try {
-      const res = await api<{ agents: Agent[] }>(`/api/registry?q=${encodeURIComponent(q)}`);
+      const res = await api<{ agents: Agent[]; degraded?: boolean; notice?: string }>(
+        `/api/registry?q=${encodeURIComponent(q)}`,
+      );
       setAgents(res.agents);
+      setDegraded(res.degraded ? (res.notice ?? "Showing the public directory.") : null);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -98,13 +105,25 @@ export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => voi
 
         {error && <div className="mt-4"><ErrorNote>{error}</ErrorNote></div>}
 
+        {degraded && (
+          <p className="mt-4 rounded-xl border border-guarded/35 bg-guarded/10 px-3 py-2.5 text-xs leading-relaxed text-guarded">
+            {degraded}
+          </p>
+        )}
+
         {agents && (
           <>
             <p className="mt-4 text-sm text-fg-muted">
               {agents.length} agents ·{" "}
               <span className="text-brand-soft">{unrated} with no rating at all</span> ·{" "}
-              {agents.filter((a) => a.probeableCount > 0).length} probeable ·{" "}
-              {agents.filter((a) => a.strictCount > 0).length} schema-strict
+              {degraded ? (
+                "contract details unavailable"
+              ) : (
+                <>
+                  {agents.filter((a) => a.probeableCount > 0).length} probeable ·{" "}
+                  {agents.filter((a) => a.strictCount > 0).length} schema-strict
+                </>
+              )}
             </p>
             <p className="mt-1 text-xs text-fg-faint">
               Search is the registry&apos;s own keyword match, so some results are only loosely
@@ -157,7 +176,14 @@ export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => voi
                         <Wallet size={11} /> {a.walletAddress}
                       </p>
                       <p className="mt-1 font-mono text-xs text-fg-muted">
-                        {a.offerings.length === 0 ? (
+                        {degraded ? (
+                          <>
+                            {a.offeringCount ?? 0} offering
+                            {(a.offeringCount ?? 0) === 1 ? "" : "s"}
+                            {a.cheapestUsd != null && ` · from $${a.cheapestUsd}`}
+                            <span className="text-fg-faint"> · no SLA or schema in this view</span>
+                          </>
+                        ) : a.offerings.length === 0 ? (
                           <span className="text-fg-faint">no offerings — nothing to probe</span>
                         ) : cheapest ? (
                           <>
