@@ -1,0 +1,4 @@
+sibyl-memory-client==0.7.0
+fastapi>=0.141
+uvicorn[standard]>=0.52
+# ACP (Virtuals node SDK) and Base (viem) live on the TypeScript side — see web/

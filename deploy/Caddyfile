@@ -1,0 +1,20 @@
+# TLS for the memory engine, so Vercel can reach it over HTTPS.
+#
+#   sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+#
+# Caddy gets a certificate automatically. Point an A record at this box first.
+
+engine.your-domain.com {
+	encode zstd gzip
+
+	# Only the app should be talking to this host. The API key is checked by
+	# the engine itself; this is just the transport.
+	reverse_proxy 127.0.0.1:8787 {
+		header_up X-Real-IP {remote_host}
+	}
+
+	log {
+		output file /var/log/caddy/precedent-engine.log
+	}
+}

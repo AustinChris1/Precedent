@@ -1,0 +1,40 @@
+# The Precedent memory engine, as a systemd service.
+#
+#   sudo cp deploy/precedent-engine.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now precedent-engine
+#   systemctl status precedent-engine
+#
+# This is the process Vercel CANNOT run: it owns memory.db on a real disk.
+
+[Unit]
+Description=Precedent memory engine (Sibyl Memory)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=precedent
+Group=precedent
+WorkingDirectory=/opt/precedent
+
+# memory.db lives here and must survive restarts, deploys and reboots
+Environment="PRECEDENT_DB=/var/lib/precedent/memory.db"
+# must match ENGINE_API_KEY in the Vercel project
+Environment="PRECEDENT_API_KEY=CHANGE_ME"
+
+# bound to localhost only — the reverse proxy terminates TLS in front of it
+ExecStart=/opt/precedent/.venv/bin/uvicorn precedent.server:app --host 127.0.0.1 --port 8787
+
+Restart=always
+RestartSec=3
+
+# the engine needs to write exactly one directory, and nothing else
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/precedent
+
+[Install]
+WantedBy=multi-user.target

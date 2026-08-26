@@ -1,0 +1,40 @@
+# ---------------------------------------------------------------- secrets
+.env
+.env.*
+!.env.example
+credentials.json
+# the submission token and anything else private
+*.local.md
+
+# ---------------------------------------------------------------- python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# ------------------------------------------------------------- the memory
+# memory.db is the product's state, never source
+*.db
+*.db-wal
+*.db-shm
+
+# ------------------------------------------------------------------ tools
+# written by `next dev`, not by us
+CLAUDE.md
+AGENTS.md
+web/CLAUDE.md
+web/AGENTS.md
+.claude/
+.vercel/
+
+# --------------------------------------------------------------- scratch
+*.tmp.mjs
+*.tmp.js
+scratch/
+shots/
+
+# ------------------------------------------------------------------- os
+.DS_Store
+Thumbs.db
+desktop.ini
