@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { searchAgents, selectTargets, estimateCost, liveness, gradeLevel } from "@/lib/registry";
+import {
+  searchAgents,
+  selectTargets,
+  estimateCost,
+  liveness,
+  gradeLevel,
+  RegistryUnavailableError,
+} from "@/lib/registry";
 import {
   PROBE_CATEGORIES,
   AGENTS_PER_CATEGORY,
@@ -78,6 +85,10 @@ export async function GET(req: Request) {
       }),
     });
   } catch (err) {
+    // 503 + a flag, so the console can say "their outage" rather than "our bug"
+    if (err instanceof RegistryUnavailableError) {
+      return NextResponse.json({ error: err.message, upstream: true }, { status: 503 });
+    }
     return NextResponse.json({ error: (err as Error).message }, { status: 502 });
   }
 }

@@ -85,12 +85,52 @@ export type ProbeTarget = {
   spec: ProbeSpec;
 };
 
-export async function searchAgents(query: string, topK = 100): Promise<AcpAgentRecord[]> {
-  const res = await fetch(`${REGISTRY}?query=${encodeURIComponent(query)}&topK=${topK}`);
-  if (!res.ok) throw new Error(`registry search failed: ${res.status}`);
-  const body = (await res.json()) as { data?: AcpAgentRecord[] };
-  return body.data ?? [];
+/**
+ * The ACP registry is a third party and it does go down — observed returning
+ * `{"message":"searchAgents error Request failed with status code 503"}` wrapped
+ * as a 500. Surfacing that as a bare status code makes their outage look like
+ * our bug, so upstream failures get their own error type and a short retry.
+ */
+export class RegistryUnavailableError extends Error {
+  constructor(readonly status: number) {
+    super(
+      `The Virtuals ACP registry is not responding (it returned ${status}). ` +
+        `This is their API, not Precedent — try again shortly.`,
+    );
+    this.name = "RegistryUnavailableError";
+  }
 }
+
+const RETRY_DELAYS_MS = [400, 1200];
+
+export async function searchAgents(query: string, topK = 100): Promise<AcpAgentRecord[]> {
+  let lastStatus = 0;
+
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${REGISTRY}?query=${encodeURIComponent(query)}&topK=${topK}`);
+    } catch {
+      lastStatus = 0; // network-level failure; treat as upstream and retry
+      await sleep(RETRY_DELAYS_MS[attempt] ?? 0);
+      continue;
+    }
+
+    if (res.ok) {
+      const body = (await res.json()) as { data?: AcpAgentRecord[] };
+      return body.data ?? [];
+    }
+
+    lastStatus = res.status;
+    // 4xx means we asked wrongly — retrying will not help
+    if (res.status < 500) break;
+    await sleep(RETRY_DELAYS_MS[attempt] ?? 0);
+  }
+
+  throw new RegistryUnavailableError(lastStatus);
+}
+
+const sleep = (ms: number) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
 
 export type SelectionOptions = {
   /** Skip anything pricier than this. Probes are meant to be cheap. */
