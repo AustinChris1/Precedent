@@ -1,10 +1,4 @@
-/**
- * Typed client for the Precedent memory engine (Python + Sibyl Memory).
- *
- * The engine is the only non-TS piece: sibyl-memory-client is Python-only, so
- * the five-tier memory lives behind this small HTTP surface. Everything else
- * in this project is TypeScript.
- */
+/** Typed client for the Precedent memory engine (Python + Sibyl Memory). */
 
 export type ProbeOutcome =
   | "delivered"
@@ -34,7 +28,7 @@ export type Decision = {
   collateral_pct?: number;
   penalty_x?: number;
   reason?: string;
-  /** Recalled incidents that justify these terms — the load-bearing part. */
+  /** Recalled incidents that justify these terms, the load-bearing part. */
   basis: string[];
   precedents?: string[];
 };
@@ -100,7 +94,7 @@ export function underwrite(agentId: string, amountUsdc: number, jobDescription: 
   });
 }
 
-/** Write a probe result into memory. Called by the ACP probe runner. */
+/** Write a probe result into memory. */
 export function gradeProbe(
   agentId: string,
   outcome: ProbeOutcome,
@@ -117,7 +111,7 @@ export function getDossier(agentId: string) {
   return call<Dossier>(`/dossier/${encodeURIComponent(agentId)}`);
 }
 
-/** SHA-256 of the COLD journal — anchored on Base so history is tamper-evident. */
+/** SHA-256 of the COLD journal, anchored on Base so history is tamper-evident. */
 export function getJournalDigest() {
   return call<{ journal_digest: string }>("/anchor");
 }

@@ -1,21 +1,4 @@
-/**
- * Build a probe spec from an agent's OWN published contract.
- *
- * Every ACP offering declares three things we can hold a provider to:
- *   - `deliverable`  a JSON Schema the output is supposed to satisfy
- *   - `slaMinutes`   the delivery window the provider itself advertised
- *   - `priceValue`   the price it quoted
- *
- * So Precedent never imposes its own taste. A breach is "you did not honor the
- * contract you published", which is defensible to the provider, to a buyer, and
- * to a judge reading the repo. That is the difference between a reputation
- * system and an opinion.
- *
- * The validator below covers the JSON Schema subset ACP offerings actually use
- * (object/array/string/number/integer/boolean, properties, required, items).
- * Anything it cannot interpret is treated as "no constraint" — never as a
- * breach, because an unfair incident is worse than a missing one.
- */
+/** Build a probe spec from an agent's OWN published contract. */
 
 import type { ProbeSpec } from "./probe-grading";
 
@@ -34,15 +17,7 @@ export type AcpOffering = {
   requirements?: JsonSchema | null;
 };
 
-/**
- * Is this deliverable an actual JSON Schema, or just a sentence describing one?
- *
- * 79% of live ACP offerings put prose in `deliverable` — "Detailed review report
- * with issues and fixes" — which is truthy but carries no machine-checkable
- * constraint. Grading against it would mean grading against our own taste, which
- * is the one thing this project refuses to do. So an offering is only a probe
- * target when it publishes a real schema object.
- */
+/** Is this deliverable an actual JSON Schema, or just a sentence describing one? */
 export function isJsonSchema(d: unknown): d is JsonSchema {
   if (!d || typeof d !== "object" || Array.isArray(d)) return false;
   const o = d as Record<string, unknown>;

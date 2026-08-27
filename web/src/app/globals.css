@@ -1,12 +1,6 @@
 @import "tailwindcss";
 
-/*
-  Precedent — white paper, liquid glass.
-
-  The page is pure white. Colour enters only as soft ambient washes behind the
-  surface layer, so frosted panels have something to refract; without that, glass
-  on white is just a grey box. Charcoal ink and a periwinkle blue carry the brand.
-*/
+/* Precedent, white paper, liquid glass. */
 :root {
   --bg: #ffffff;
   --bg-sunken: #f6f7f9;
@@ -22,7 +16,7 @@
   --brand: #5878c8;
   --brand-soft: #7b95dd;
 
-  /* Risk ramp: green -> slate -> rose -> red. No orange in the family. */
+  /* Risk ramp: green -> slate -> rose -> red. */
   --band-standard: #12795a;
   --band-guarded: #5c6478;
   --band-restricted: #a33d63;
@@ -66,11 +60,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/*
-  Ambient field. Fixed behind everything: four colour wells that the glass layer
-  actually has something to refract. Without this, frosted panels on white are
-  indistinguishable from flat cards — the wash IS the effect.
-*/
+/* Ambient field. */
 .ambient::before,
 .ambient::after {
   content: "";
@@ -110,12 +100,7 @@ body {
   background: radial-gradient(circle, rgba(102, 106, 168, 0.30) 0%, transparent 68%);
 }
 
-/*
-  Liquid glass. A refracting slab: heavy blur plus saturation lifts the colour
-  behind it, the top inset highlight gives the edge thickness, and the ::before
-  sheen is the specular band that makes it read as a physical surface rather
-  than a translucent rectangle.
-*/
+/* Liquid glass. */
 .glass {
   position: relative;
   background: linear-gradient(
@@ -157,7 +142,7 @@ body {
   border-color: rgba(255, 255, 255, 0.85);
 }
 
-/* Inset well — the recessed counterpart to a raised slab. */
+/* Inset well, the recessed counterpart to a raised slab. */
 .well {
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(10px) saturate(150%);
@@ -283,10 +268,7 @@ body {
 }
 
 /* ------------------------------------------------------- ambient motion */
-/*
-  The colour wells drift slowly. Glass only reads as glass when what is behind
-  it moves — a static wash looks like a painted gradient.
-*/
+/* The colour wells drift slowly. */
 @keyframes drift-a {
   0%, 100% { transform: translate(-50%, 0) scale(1); }
   50%      { transform: translate(-46%, 4rem) scale(1.12); }

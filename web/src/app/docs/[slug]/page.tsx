@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getDoc, getDocSlugs } from "@/lib/docs";
 import { FlowArt, TiersArt, FlipArt, MarketArt } from "@/components/art";
-import { Photo,  type PhotoName } from "@/components/Photo";
+import { Photo, type PhotoName } from "@/components/Photo";
 
 export async function generateStaticParams() {
   return (await getDocSlugs()).map((slug) => ({ slug }));
@@ -11,7 +11,7 @@ export async function generateMetadata(props: PageProps<"/docs/[slug]">) {
   const { slug } = await props.params;
   const doc = await getDoc(slug);
   return {
-    title: doc ? `${doc.title} — Precedent docs` : "Precedent docs",
+    title: doc ? `${doc.title}, Precedent docs` : "Precedent docs",
     description: doc?.summary,
   };
 }
@@ -45,7 +45,7 @@ const ART: Record<string, { art: React.ReactNode; caption: string }> = {
   "how-it-works": {
     art: <FlowArt className="w-full" />,
     caption:
-      "Probe, record, remember, decide — and the outcome of today's job becomes evidence for tomorrow's.",
+      "Probe, record, remember, decide, and the outcome of today's job becomes evidence for tomorrow's.",
   },
   usage: {
     art: <FlipArt className="w-full" />,
@@ -86,7 +86,6 @@ export default async function DocPage(props: PageProps<"/docs/[slug]">) {
       )}
 
       <div className="doc-prose" dangerouslySetInnerHTML={{ __html: doc.html }} />
-
 
       {slug === "overview" && (
         <figure className="glass mt-10 rounded-2xl p-6">

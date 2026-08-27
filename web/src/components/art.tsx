@@ -1,9 +1,4 @@
-/**
- * Brand illustrations. Drawn as inline SVG rather than sourced imagery: they
- * inherit the palette, stay crisp at any size, add no licensing questions, and
- * — for MarketArt — are generated from the real census numbers instead of
- * decorating the page with something that only looks like data.
- */
+/** Brand illustrations. */
 
 const INK = "var(--fg)";
 const MUTED = "var(--fg-faint)";

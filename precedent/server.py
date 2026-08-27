@@ -1,13 +1,4 @@
-"""HTTP wrapper around the memory engine — the only Python you host.
-
-The TypeScript side (Next.js app, ACP node SDK, viem/Base) does everything else
-and calls this service for the memory-critical path. Runs comfortably in
-~60-80MB RAM: sibyl-memory-client has zero dependencies and SQLite is a file.
-
-Run:  uvicorn precedent.server:app --host 127.0.0.1 --port 8787
-Env:  PRECEDENT_DB (default ~/.sibyl-memory/precedent.db)
-      PRECEDENT_API_KEY (required in production; requests send X-API-Key)
-"""
+"""HTTP wrapper around the memory engine, the only Python you host."""
 
 from __future__ import annotations
 
@@ -52,24 +43,28 @@ class GradeReq(BaseModel):
     outcome: str  # one of probes.OUTCOME_SEVERITY
     note: str
     job_ref: str | None = None  # ACP job id / Base tx hash
-    #: Only the probe runner may attach a job reference. Anything typed by hand
-    #: is recorded without one, so evidence and admin entries stay separable at
-    #: a glance — a label alone would not enforce that.
+    # Only the probe runner may attach a job reference.
     source: str = "manual"
 
 
 @app.get("/health")
+
+
 def health() -> dict[str, Any]:
     return {"ok": True, "outcomes": sorted(OUTCOME_SEVERITY)}
 
 
 @app.post("/underwrite")
+
+
 def underwrite(req: UnderwriteReq, x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     return Underwriter(memory()).underwrite(req.agent_id, req.amount_usdc, req.job_description)
 
 
 @app.post("/grade")
+
+
 def grade(req: GradeReq, x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     if req.outcome not in OUTCOME_SEVERITY:
@@ -82,6 +77,8 @@ def grade(req: GradeReq, x_api_key: str | None = Header(default=None)) -> dict[s
 
 
 @app.get("/dossier/{agent_id}")
+
+
 def dossier(agent_id: str, x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     d = memory().get_dossier(agent_id)
@@ -97,12 +94,16 @@ def dossier(agent_id: str, x_api_key: str | None = Header(default=None)) -> dict
 
 
 @app.get("/anchor")
+
+
 def anchor(x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     return {"journal_digest": journal_digest(memory())}
 
 
 @app.post("/curate")
+
+
 def run_curation(x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     """Dynamic storage: migrate tiers, rewrite the charter, recompute the watchlist."""
     check_key(x_api_key)
@@ -120,18 +121,24 @@ def run_curation(x_api_key: str | None = Header(default=None)) -> dict[str, Any]
 
 
 @app.get("/watchlist")
+
+
 def get_watchlist(x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     return {"agents": watchlist(memory())}
 
 
 @app.get("/charter")
+
+
 def get_charter(x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     return memory().charter()
 
 
 @app.get("/journal")
+
+
 def get_journal(limit: int = 25, x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
     events = memory().client.read_events(limit=limit)
@@ -139,6 +146,8 @@ def get_journal(limit: int = 25, x_api_key: str | None = Header(default=None)) -
 
 
 @app.get("/agents")
+
+
 def list_agents(x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     """Live dossiers plus the HOT index of who has been archived."""
     check_key(x_api_key)

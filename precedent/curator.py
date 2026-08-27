@@ -1,24 +1,4 @@
-"""Dynamic storage: memory that reorganizes itself and rewrites its own rules.
-
-Recall alone is table stakes. The curator is what moves Precedent past it:
-
-1. **Tier lifecycle.** Counterparties migrate WARM <-> ARCHIVE on their own
-   behavior. Go quiet for a month and your dossier is archived off the hot
-   path; show up again and it is restored with its history intact.
-
-2. **Self-rewriting charter.** The curator reads the COLD journal, measures the
-   breach rate Precedent has actually observed, and rewrites the REFERENCE
-   charter accordingly. When the market turns out to be full of bad actors, an
-   unknown counterparty gets less benefit of the doubt — automatically, and
-   persistently. The rule that prices tomorrow's job is derived from what
-   memory recorded yesterday.
-
-3. **Recomputed watchlist** in HOT, so a fresh session knows who is on
-   probation without scanning anything.
-
-Every curation run is journaled with its provenance, so a decision can be
-traced back to the evidence that shaped the rule that produced it.
-"""
+"""Dynamic storage: memory that reorganizes itself and rewrites its own rules."""
 
 from __future__ import annotations
 
@@ -31,13 +11,14 @@ from .underwriter import trust_score
 
 DORMANT_AFTER_DAYS = 30
 WATCHLIST_TRUST_CEILING = 40.0
-#: Floor/ceiling for the learned baseline. A stranger is never fully trusted,
-#: and never condemned purely for being a stranger.
+# Floor/ceiling for the learned baseline.
 BASELINE_MIN = 10.0
 BASELINE_MAX = 50.0
 
 
 @dataclass
+
+
 class CurationReport:
     archived: list[str] = field(default_factory=list)
     restored: list[str] = field(default_factory=list)
@@ -79,11 +60,8 @@ def curate(memory: PrecedentMemory, now: datetime | None = None) -> CurationRepo
     charter = memory.charter()
     report = CurationReport(baseline_before=float(charter["baseline_trust"]))
 
-    # --- 1. tier lifecycle -------------------------------------------------
-    # list_entities() only ever returns live rows: archived ones are hidden from
-    # it, from get_entity() and from search. So demotion walks the live set, and
-    # promotion is driven by memory.record_incident(), which restores a
-    # counterparty from its journal snapshot the moment it resurfaces.
+    # 1. tier lifecycle
+    # list_entities() only ever returns live rows: archived ones are hidden from it, from get_entity() and from.
     for row in memory.client.list_entities(COUNTERPARTY, limit=1000):
         name = row["name"]
         entity = memory.get_dossier(name)
@@ -96,7 +74,7 @@ def curate(memory: PrecedentMemory, now: datetime | None = None) -> CurationRepo
             if memory.archive_with_snapshot(name, reason=f"dormant >{DORMANT_AFTER_DAYS}d"):
                 report.archived.append(name)
 
-    # --- 2. charter rewrites itself from journal evidence -------------------
+    # 2. charter rewrites itself from journal evidence
     rate, considered = observed_breach_rate(memory)
     report.breach_rate = rate
     report.incidents_considered = considered
@@ -114,7 +92,7 @@ def curate(memory: PrecedentMemory, now: datetime | None = None) -> CurationRepo
         }
         memory.set_charter(updated)
 
-    # --- 3. watchlist into HOT ---------------------------------------------
+    # 3. watchlist into HOT
     watch: list[str] = []
     for row in memory.client.list_entities(COUNTERPARTY, limit=1000):
         entity = memory.get_dossier(row["name"])
@@ -147,7 +125,7 @@ def curate(memory: PrecedentMemory, now: datetime | None = None) -> CurationRepo
 
 
 def watchlist(memory: PrecedentMemory) -> list[str]:
-    """Read by a fresh session before it quotes anyone — no scanning required."""
+    """Read by a fresh session before it quotes anyone, no scanning required."""
     state = memory.client.get_state("watchlist")
     if not state:
         return []

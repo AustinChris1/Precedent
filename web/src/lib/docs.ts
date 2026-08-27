@@ -2,14 +2,11 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { marked } from "marked";
 
-/**
- * Docs are markdown files synced from the repo root by scripts/sync-docs.mjs.
- * Read on the server at build time, so the pages are static.
- */
+/** Docs are markdown files synced from the repo root by scripts/sync-docs.mjs. */
 
 const DOCS_DIR = path.join(process.cwd(), "src/content/docs");
 
-/** Fixed order — this is a reading sequence, not an alphabetical list. */
+/** Fixed order, this is a reading sequence, not an alphabetical list. */
 export const DOC_ORDER = ["overview", "how-it-works", "usage"] as const;
 
 export type DocMeta = { slug: string; title: string; summary: string };

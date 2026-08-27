@@ -1,17 +1,4 @@
-/**
- * What Precedent probes.
- *
- * Selection rule: **a breach must be provable against the provider's own
- * published contract.** Every ACP offering declares a deliverable JSON Schema,
- * an SLA in minutes, and a price, so grading never depends on our taste — see
- * offering-spec.ts. Categories below just decide which corner of the registry
- * we sample; the pass/fail bar always comes from the agent itself.
- *
- * Five agents per category, each job run twice (CONSISTENCY_REPEATS): one good
- * delivery proves little, and flakiness is the failure mode that actually costs
- * buyers money. "Same contract, same agent, different outcome" is the finding
- * no scraped reputation dataset contains.
- */
+/** What Precedent probes. */
 
 export const PROBE_CATEGORIES = {
   /** Structured outputs: schema conformance is unambiguous. */

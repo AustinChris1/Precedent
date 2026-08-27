@@ -1,10 +1,4 @@
-/**
- * ACP registry client + probe target selection.
- *
- * `/agents/search` is publicly readable, so target selection needs no
- * credentials — only placing jobs does. That means the probe plan can be
- * computed and reviewed before spending anything.
- */
+/** ACP registry client + probe target selection. */
 
 import { isJsonSchema, specFromOffering, type AcpOffering } from "./offering-spec.ts";
 import type { ProbeSpec } from "./probe-grading.ts";
@@ -21,13 +15,7 @@ export type AcpAgentRecord = {
   offerings?: (AcpOffering & { isHidden?: boolean })[];
 };
 
-/**
- * How recently the registry saw this agent.
- *
- * `null` means never seen; some records carry a far-future sentinel
- * (2999-12-31) which tells us nothing either. Neither is a good first probe
- * target, so both are surfaced rather than silently ranked.
- */
+/** How recently the registry saw this agent. */
 export type Liveness = "active" | "stale" | "unknown";
 
 export function liveness(lastActiveAt: string | null | undefined, now = Date.now()): Liveness {
@@ -39,20 +27,7 @@ export function liveness(lastActiveAt: string | null | undefined, now = Date.now
   return now - t <= 60 * 86_400_000 ? "active" : "stale";
 }
 
-/**
- * How strictly an offering can be graded.
- *
- *  - "strict": publishes a real JSON Schema, so a *malformed* deliverable is
- *    provable against the provider's own contract.
- *  - "basic":  priced with an SLA but only prose where a schema should be.
- *    Ghosting, lateness and price drift are still provable — three of the five
- *    breach types need no schema at all — but "wrong shape" is not.
- *  - "none":   nothing to buy, so nothing to observe.
- *
- * Only about a quarter of live offerings reach "strict", so requiring one would
- * have thrown away three quarters of the market for no gain on the breaches
- * that do not need it.
- */
+/** How strictly an offering can be graded. */
 export type GradeLevel = "strict" | "basic" | "none";
 
 export function gradeLevel(o: AcpOffering & { isHidden?: boolean }): GradeLevel {
@@ -79,23 +54,18 @@ export type ProbeTarget = {
   offeringName: string;
   priceUsdc: number;
   slaMinutes: number;
-  /** Registry rating, if the agent has one at all. Most do not. */
+  /** Registry rating, if the agent has one at all. */
   rating: number | null;
   liveness: Liveness;
   spec: ProbeSpec;
 };
 
-/**
- * The ACP registry is a third party and it does go down — observed returning
- * `{"message":"searchAgents error Request failed with status code 503"}` wrapped
- * as a 500. Surfacing that as a bare status code makes their outage look like
- * our bug, so upstream failures get their own error type and a short retry.
- */
+/** Upstream outages get their own error type so their 500 does not read as our bug. */
 export class RegistryUnavailableError extends Error {
   constructor(readonly status: number) {
     super(
       `The Virtuals ACP registry is not responding (it returned ${status}). ` +
-        `This is their API, not Precedent — try again shortly.`,
+        `This is their API, not Precedent, try again shortly.`,
     );
     this.name = "RegistryUnavailableError";
   }
@@ -122,7 +92,7 @@ export async function searchAgents(query: string, topK = 100): Promise<AcpAgentR
     }
 
     lastStatus = res.status;
-    // 4xx means we asked wrongly — retrying will not help
+    // 4xx means we asked wrongly, retrying will not help
     if (res.status < 500) break;
     await sleep(RETRY_DELAYS_MS[attempt] ?? 0);
   }
@@ -132,19 +102,7 @@ export async function searchAgents(query: string, topK = 100): Promise<AcpAgentR
 
 const sleep = (ms: number) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
 
-/**
- * Fallback: the public ACP directory.
- *
- * When `/agents/search` is down — as it was for hours on 2026-08-26, returning
- * its own downstream's 503 — the rest of the ACP stack keeps working. Their web
- * UI reads agents from a Strapi API on a different host, and so can we.
- *
- * The catch, and why this is a DEGRADED view rather than a swap: the directory's
- * `offerings` column carries only `name`, `price`, `priceUsd`. No `slaMinutes`,
- * no `deliverable` schema. Those two fields are what every grading decision is
- * made against, so a directory record can be listed and underwritten but must
- * NEVER be used to plan a probe campaign — hence selectTargets does not call it.
- */
+/** Fallback: the public ACP directory. */
 const DIRECTORY = "https://acpx.virtuals.io/api/agents";
 
 type DirectoryOffering = { name?: string; price?: number; priceUsd?: number };
@@ -191,7 +149,7 @@ export async function searchDirectory(query: string, limit = 24): Promise<Direct
 }
 
 export type SelectionOptions = {
-  /** Skip anything pricier than this. Probes are meant to be cheap. */
+  /** Skip anything pricier than this. */
   maxPriceUsdc?: number;
   /** Skip long SLAs: a probe must resolve inside the build window. */
   maxSlaMinutes?: number;
@@ -200,12 +158,7 @@ export type SelectionOptions = {
   exclude?: Set<string>;
 };
 
-/**
- * Pick probe targets for one category.
- *
- * Cheapest-first, one offering per agent, so the budget buys breadth of
- * counterparties rather than depth on a single one.
- */
+/** Pick probe targets for one category. */
 export async function selectTargets(
   keywords: string[],
   opts: SelectionOptions = {},
@@ -229,7 +182,7 @@ export async function selectTargets(
         return Number.isFinite(price) && price > 0 && price <= maxPriceUsdc;
       })
       .filter((o) => Number.isFinite(Number(o.slaMinutes)) && Number(o.slaMinutes) <= maxSlaMinutes)
-      // only offerings publishing a REAL schema — prose is not a contract
+      // only offerings publishing a REAL schema, prose is not a contract
       .filter((o) => isGradeable(o))
       .sort((a, b) => Number(a.priceValue) - Number(b.priceValue));
 

@@ -1,14 +1,4 @@
-/**
- * The Recall Loop.
- *
- * A citation bracket pair holds a seal — the ruling — encircled by an arrow that
- * turns back on itself. What was written down returns to decide the next case;
- * memory as a closed circuit.
- *
- * Two cuts of the same mark. The full one carries the return arc; `simple` drops
- * it, because below ~20px the arc and the brackets fill into a blob. Small sizes
- * keep the silhouette that identifies the brand: bracket, seal, bracket.
- */
+/** The Recall Loop. */
 
 export function Logo({
   className = "",

@@ -2,13 +2,7 @@ import { NextResponse } from "next/server";
 import { classify } from "@/lib/probe-grading";
 import { acceptsDeliverable, type JsonSchema } from "@/lib/offering-spec";
 
-/**
- * Grade a deliverable against an offering's OWN published contract.
- *
- * Pure logic, no engine and no network: this is the rule that decides whether
- * a counterparty breached, so the console lets you run it on any payload and
- * see exactly why the verdict came out the way it did.
- */
+/** Grade a deliverable against an offering's OWN published contract. */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "invalid JSON body" }, { status: 422 });

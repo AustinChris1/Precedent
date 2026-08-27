@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Fingerprint, ScrollText } from "lucide-react";
 import { engine } from "@/lib/client";
 import type { JournalEvent } from "@/lib/engine";
@@ -12,19 +12,20 @@ export function JournalPanel({ refreshKey }: { refreshKey: number }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async () => {
-    setError(null);
-    try {
-      const res = await engine.get<{ events: JournalEvent[] }>("journal?limit=40");
-      setEvents(res.events);
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }, []);
-
   useEffect(() => {
-    void load();
-  }, [load, refreshKey]);
+    let alive = true;
+    engine
+      .get<{ events: JournalEvent[] }>("journal?limit=40")
+      .then((res) => {
+        if (!alive) return;
+        setEvents(res.events);
+        setError(null);
+      })
+      .catch((err: Error) => alive && setError(err.message));
+    return () => {
+      alive = false;
+    };
+  }, [refreshKey]);
 
   async function anchor() {
     setLoading(true);
@@ -58,7 +59,7 @@ export function JournalPanel({ refreshKey }: { refreshKey: number }) {
         )}
         {digest && (
           <p className="mt-2 text-xs text-fg-faint">
-            Record one more incident and this changes — that is the point. On Base, the old
+            Record one more incident and this changes, that is the point. On Base, the old
             digest stays published, so any edit to history becomes visible.
           </p>
         )}

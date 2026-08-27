@@ -1,10 +1,10 @@
 # Precedent
 
-**A memory-native underwriter for agent-to-agent commerce.** Agents on Virtuals ACP hire each other blind. Precedent spends its own USDC running mystery-shopper probe jobs against live agents, remembers exactly how each counterparty behaved, and sells experience-backed underwriting decisions — paid in USDC on Base. Its only asset is its memory. Delete the memory and there is no product.
+**A memory-native underwriter for agent-to-agent commerce.** Agents on Virtuals ACP hire each other blind. Precedent spends its own USDC running mystery-shopper probe jobs against live agents, remembers exactly how each counterparty behaved, and sells experience-backed underwriting decisions, paid in USDC on Base. Its only asset is its memory. Delete the memory and there is no product.
 
-*Sibyl Labs Hackathon 2026 — team Precedent.*
+*Sibyl Labs Hackathon 2026, team Precedent.*
 
-## Critical-path memory calls (for judges — the load-bearing proof)
+## Critical-path memory calls (for judges, the load-bearing proof)
 
 Every underwriting decision is impossible without Sibyl Memory. The critical path:
 
@@ -14,7 +14,7 @@ Every underwriting decision is impossible without Sibyl Memory. The critical pat
 | `set_entity("counterparty", ...)` + `write_event(...)` | [precedent/memory.py](precedent/memory.py) `record_incident()` | Probe outcomes are the product's proprietary data; nowhere else stores them. |
 | `search_entities(query, category="ruling")` | [precedent/underwriter.py](precedent/underwriter.py) `_apply_precedent()` | Stare decisis, enforced: a harsher prior ruling on a like job overrides today's softer one. Proven by `tests/test_precedent.py`. |
 | `get_reference("underwriting_charter")` | [precedent/memory.py](precedent/memory.py) `charter()` | Decay half-life and terms bands live in the REFERENCE tier. |
-| `read_events(...)` | [precedent/payments.py](precedent/payments.py) `journal_digest()` | The COLD journal hash anchored on Base — tamper-evident memory. |
+| `read_events(...)` | [precedent/payments.py](precedent/payments.py) `journal_digest()` | The COLD journal hash anchored on Base, tamper-evident memory. |
 | `archive_entity()` + journal snapshot | [precedent/memory.py](precedent/memory.py) `archive_with_snapshot()` / `restore()` | Tier migration. Restoring a dormant counterparty's history is impossible without the journal. |
 | `set_reference()` (rewrite) | [precedent/curator.py](precedent/curator.py) `curate()` | Memory rewrites its own underwriting rules from journal evidence. |
 
@@ -36,14 +36,14 @@ This is a floor, not the full registry:
 
 - **1,303 agents** reachable through search, publishing **3,929 offerings**
 - **4.5% carry a `rating` field**; for the rest the registry returns none. That
-  means *no rating exposed here* — not *never completed a job*. Success rates do
+  means *no rating exposed here*, not *never completed a job*. Success rates do
   exist elsewhere on the Virtuals app.
 - every offering declares a deliverable JSON Schema, a requirements schema, and
   an SLA in minutes
 
 That last point is what makes Precedent fair as well as useful: a breach is
 never our opinion, it is **the provider failing the contract it published
-itself** — wrong shape against its own schema, late against its own SLA, or
+itself**, wrong shape against its own schema, late against its own SLA, or
 invoiced above its own quote. See [offering-spec.ts](web/src/lib/offering-spec.ts).
 
 ## Beyond recall: coordination and dynamic storage
@@ -55,11 +55,11 @@ by `python tests/test_curation.py`:
 state, no queue, no database besides Sibyl Memory: the *probe runner* (TS/ACP)
 writes incidents, the *curator* reorganizes storage and rewrites the rules, and
 the *underwriter* prices jobs for external callers. The curator changing the charter in
-one process changes what the underwriter decides in another — the handoff is
+one process changes what the underwriter decides in another, the handoff is
 the memory itself.
 
 **Storage reorganizes itself.** Dossiers migrate WARM → ARCHIVE when a
-counterparty goes dormant, and are promoted back — with history intact — the
+counterparty goes dormant, and are promoted back, with history intact, the
 moment it resurfaces. That round trip is not free: `archive_entity()` hides an
 entity from `get_entity()`, `list_entities()` and search, so archiving alone
 would erase the record rehabilitation depends on. Precedent snapshots each
@@ -70,7 +70,7 @@ index of what is archived, making ARCHIVE reversible.
 actually observed and rewrites the REFERENCE charter's baseline trust, stamped
 with provenance (`derived_from_incidents`, `observed_breach_rate`). A market
 full of bad actors makes Precedent permanently stricter. The rule that prices
-tomorrow's job is derived from what memory recorded yesterday — and it survives
+tomorrow's job is derived from what memory recorded yesterday, and it survives
 into every future session.
 
 ```bash
@@ -104,45 +104,45 @@ reaches the browser.
 
 ### The mark
 
-**The Recall Loop** — a citation bracket pair holds the blue seal of a ruling, encircled
+**The Recall Loop**, a citation bracket pair holds the blue seal of a ruling, encircled
 by an arrow that turns back on itself: what was written down returns to decide the
 next case. Drawn as inline SVG in [Logo.tsx](web/src/components/Logo.tsx), so it
 inherits the palette and stays legible in monochrome and at favicon size.
 
 ## Tier usage
 
-- **HOT** — active engagements and watchlist (`set_state`/`get_state`)
-- **WARM** — one dossier entity per counterparty agent
-- **COLD** — append-only incident + ruling journal, hashed and anchored on Base
-- **REFERENCE** — the underwriting charter (decay half-life, terms bands, probe cap)
-- **ARCHIVE** — rehabilitated/dormant counterparties (`archive_entity`)
-- **FTS5** — precedent retrieval across rulings
+- **HOT**, active engagements and watchlist (`set_state`/`get_state`)
+- **WARM**, one dossier entity per counterparty agent
+- **COLD**, append-only incident + ruling journal, hashed and anchored on Base
+- **REFERENCE**, the underwriting charter (decay half-life, terms bands, probe cap)
+- **ARCHIVE**, rehabilitated/dormant counterparties (`archive_entity`)
+- **FTS5**, precedent retrieval across rulings
 
 **Rehabilitation, precisely.** Incidents decay with a 45-day half-life, so recent
-conduct outweighs old breaches — but a prior ruling keeps governing until *new
+conduct outweighs old breaches, but a prior ruling keeps governing until *new
 evidence* arrives. An agent earns its way back by delivering, not by waiting out
 the clock. Both halves are proven in `tests/test_precedent.py`.
 
-## Partner stacks — status, honestly
+## Partner stacks, status, honestly
 
 Nothing here is claimed as done until there is a transaction or job id a judge can
 open. Current state as of 2026-08-24:
 
 | Stack | Shipped now | Planned in the build window (Sep 1–10) |
 |---|---|---|
-| **Virtuals ACP** | Live registry read — target selection and costing against real agents and their published contracts ([registry.ts](web/src/lib/registry.ts), [offering-spec.ts](web/src/lib/offering-spec.ts)) | Paid probe jobs with real job ids; Precedent listed as a provider with `underwrite` and `evaluate` offerings |
+| **Virtuals ACP** | Live registry read, target selection and costing against real agents and their published contracts ([registry.ts](web/src/lib/registry.ts), [offering-spec.ts](web/src/lib/offering-spec.ts)) | Paid probe jobs with real job ids; Precedent listed as a provider with `underwrite` and `evaluate` offerings |
 | **Base** | Deterministic journal digest computed ([payments.py](precedent/payments.py) `journal_digest()`) | The digest posted on-chain, and one USDC settlement for an underwriting query |
-| **Sibyl Memory** | The entire product. Mandatory, load-bearing, and never a bonus stack. | — |
+| **Sibyl Memory** | The entire product. Mandatory, load-bearing, and never a bonus stack. |, |
 
 ## Prior work
 
 Reputation surfaces already exist in this market. Precedent is not the first thing
 to look at ACP agents, and pretending otherwise would be worse than useless:
 
-- **ACP leaderboards / success rate / aGDP** — volume and completion counts
-- **Virtuals Graduation Evaluator** — one-shot QA to get a listing
-- **The per-job ACP Evaluator role** — approve/reject before escrow releases
-- **Third-party indexes** (e.g. RNWY, Maiat) — job counts and trust scores
+- **ACP leaderboards / success rate / aGDP**, volume and completion counts
+- **Virtuals Graduation Evaluator**, one-shot QA to get a listing
+- **The per-job ACP Evaluator role**, approve/reject before escrow releases
+- **Third-party indexes** (e.g. RNWY, Maiat), job counts and trust scores
 
 *Each of these must be opened and checked before submission; entries here are
 placeholders until verified first-hand.*
@@ -154,7 +154,7 @@ returns prose where its own schema declares an object.
 
 ## How memory made this possible
 
-Not "we added memory to an app" — the memory *is* the app:
+Not "we added memory to an app", the memory *is* the app:
 
 - **Underwriting is recall.** `underwrite()` opens with `get_entity()`. No dossier,
   no price: it fails closed at a $5 probe cap rather than guessing.
@@ -170,14 +170,14 @@ Not "we added memory to an app" — the memory *is* the app:
 
 ## Architecture
 
-- **`precedent/` (Python)** — the memory engine, and nothing else. Python only because `sibyl-memory-client` is Python-only (no TS SDK exists). A small FastAPI service; the SQLite file on disk **is** the product.
-- **`web/` (TypeScript, Next.js 16 + pnpm)** — everything else: UI, Virtuals ACP integration via `@virtuals-protocol/acp-node-v2` (probe jobs + service listing), Base via viem (USDC settlement + journal anchoring). Talks to the engine over HTTP with `X-API-Key`.
+- **`precedent/` (Python)**, the memory engine, and nothing else. Python only because `sibyl-memory-client` is Python-only (no TS SDK exists). A small FastAPI service; the SQLite file on disk **is** the product.
+- **`web/` (TypeScript, Next.js 16 + pnpm)**, everything else: UI, Virtuals ACP integration via `@virtuals-protocol/acp-node-v2` (probe jobs + service listing), Base via viem (USDC settlement + journal anchoring). Talks to the engine over HTTP with `X-API-Key`.
 
 The engine needs a persistent disk (its memory is a file, so serverless would erase it); the Next.js app deploys to Vercel.
 
 ## Credentials
 
-Nothing in the console as it stands needs a key — the registry read is a public
+Nothing in the console as it stands needs a key, the registry read is a public
 endpoint and Sibyl Memory's free tier is local. Placing ACP jobs and posting to
 Base do need credentials; **[SETUP.md](SETUP.md)** covers where each one comes
 from, which are secret, and where they go. Template: [web/.env.example](web/.env.example).

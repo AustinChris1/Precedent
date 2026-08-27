@@ -1,14 +1,4 @@
-"""Mystery-shopper probes: Precedent spends its own USDC to build memory.
-
-A probe is a small real job placed with a live agent on Virtuals ACP. The
-outcome (delivered / late / malformed / ghosted) is graded and written to the
-counterparty's dossier. Probes are the reason Precedent's memory is proprietary
-experiential data rather than scraped reputation.
-
-Probe jobs are placed by the TypeScript side (web/, Virtuals ACP node SDK),
-which reports outcomes here via POST /grade. grade_probe() is the single write
-path for probe results.
-"""
+"""Mystery-shopper probes: Precedent spends its own USDC to build memory."""
 
 from __future__ import annotations
 
@@ -40,7 +30,7 @@ def grade_probe(
     severity = OUTCOME_SEVERITY[outcome]
     kind = "delivery" if severity > 0 else "breach"
     saved = memory.record_incident(
-        agent_id, kind, severity, f"probe:{outcome} — {note}", job_ref=job_ref, ts=ts or utcnow_iso()
+        agent_id, kind, severity, f"probe:{outcome}, {note}", job_ref=job_ref, ts=ts or utcnow_iso()
     )
     memory.client.write_event(
         acted=[f"probe graded {outcome} for {agent_id}"],

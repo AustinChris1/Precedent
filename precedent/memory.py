@@ -1,16 +1,4 @@
-"""The load-bearing memory layer. Every underwriting decision routes through here.
-
-Tier mapping (sibyl-memory-client 0.7.0, verified against installed package):
-  HOT   state      -> active engagements + watchlist (set_state / get_state)
-  WARM  entities   -> one dossier per counterparty agent (set_entity / get_entity)
-  COLD  journal    -> append-only incident + ruling log (write_event / read_events)
-  REFERENCE        -> the underwriting charter: thresholds, decay half-life
-  ARCHIVE          -> rehabilitated or dormant counterparties (archive_entity)
-  FTS5             -> precedent retrieval (search / search_entities)
-
-Deletion test: remove memory.db and Precedent cannot price risk for anyone —
-underwrite() fails closed for known agents and caps unknowns at probe size.
-"""
+"""The load-bearing memory layer."""
 
 from __future__ import annotations
 
@@ -54,7 +42,7 @@ class PrecedentMemory:
         if storage is not None:
             storage.close()
 
-    # -- REFERENCE ------------------------------------------------------------
+    # REFERENCE
     def charter(self) -> dict[str, Any]:
         ref = self.client.get_reference(CHARTER_KEY)
         if ref is None:
@@ -67,13 +55,8 @@ class PrecedentMemory:
         """Rewrite the underwriting rules. Called by the curator, not by hand."""
         self.client.set_reference(CHARTER_KEY, charter)
 
-    # -- ARCHIVE: reversible cold storage --------------------------------------
-    # archive_entity() hides an entity from get_entity(), list_entities() and
-    # search, so archiving alone would destroy the history rehabilitation needs.
-    # We therefore snapshot the dossier into the append-only COLD journal first
-    # and keep a HOT index of who is archived: the journal makes ARCHIVE
-    # reversible, and the index means a fresh session knows what exists without
-    # scanning anything.
+    # ARCHIVE: reversible cold storage
+    # archive_entity() hides an entity from get_entity(), list_entities() and search, so archiving alone would.
     def archived_index(self) -> dict[str, str]:
         state = self.client.get_state(ARCHIVED_INDEX_KEY)
         if not state:
@@ -118,7 +101,7 @@ class PrecedentMemory:
         self.client.write_event(acted=[f"restored counterparty {agent_id} from archive"])
         return True
 
-    # -- WARM: counterparty dossiers ------------------------------------------
+    # WARM: counterparty dossiers
     def get_dossier(self, agent_id: str) -> dict[str, Any] | None:
         try:
             return self.client.get_entity(COUNTERPARTY, agent_id)
@@ -135,8 +118,7 @@ class PrecedentMemory:
         ts: str | None = None,
     ) -> dict[str, Any]:
         ts = ts or utcnow_iso()
-        # a counterparty that resurfaces is pulled back out of ARCHIVE before
-        # the new incident lands, so its past is not silently forgotten
+        # a counterparty that resurfaces is pulled back out of ARCHIVE before the new incident lands, so its past is.
         self.restore(agent_id)
         dossier = self.get_dossier(agent_id)
         incidents = (dossier["body"].get("incidents", []) if dossier else [])
@@ -153,7 +135,7 @@ class PrecedentMemory:
         )
         return saved
 
-    # -- COLD + FTS: rulings as precedent -------------------------------------
+    # COLD + FTS: rulings as precedent
     def record_ruling(self, agent_id: str, dispute: str, ruling: dict[str, Any]) -> None:
         name = f"{agent_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')}"
         self.client.set_entity(RULING, name, {"agent_id": agent_id, "dispute": dispute, **ruling})
@@ -166,11 +148,7 @@ class PrecedentMemory:
         return self.client.search_entities(dispute_description, limit=limit, category=RULING)
 
     def rulings_for(self, agent_id: str, limit: int = 200) -> list[dict[str, Any]]:
-        """Every ruling written about one counterparty.
-
-        FTS retrieval can miss a paraphrase; this makes a bind independent of
-        how the caller happened to word the job.
-        """
+        """Every ruling written about one counterparty."""
         rows = []
         for row in self.client.list_entities(RULING, limit=limit):
             if not str(row.get("name", "")).startswith(f"{agent_id}-"):
@@ -178,7 +156,7 @@ class PrecedentMemory:
             rows.append(row)
         return rows
 
-    # -- HOT: session state ----------------------------------------------------
+    # HOT: session state
     def set_active_job(self, job: dict[str, Any]) -> None:
         jobs = self.client.get_state("active_jobs") or {"body": {"jobs": []}}
         current = jobs.get("body", jobs).get("jobs", [])
@@ -191,6 +169,6 @@ class PrecedentMemory:
             return []
         return state.get("body", state).get("jobs", [])
 
-    # -- ARCHIVE ---------------------------------------------------------------
+    # ARCHIVE
     def retire(self, agent_id: str, reason: str) -> None:
         self.client.archive_entity(COUNTERPARTY, agent_id, reason=reason)

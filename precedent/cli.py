@@ -1,10 +1,4 @@
-"""CLI entry point. Every command routes through the memory layer.
-
-  python -m precedent underwrite <agent_id> --amount 1000 --job "3-part data pipeline"
-  python -m precedent grade <agent_id> --outcome malformed --note "40% corrupted rows" --job-ref <acp_job_id>
-  python -m precedent report <agent_id>
-  python -m precedent anchor
-"""
+"""CLI entry point."""
 
 from __future__ import annotations
 
@@ -73,7 +67,6 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

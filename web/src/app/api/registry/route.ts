@@ -17,13 +17,7 @@ import {
   type ProbeCategory,
 } from "@/lib/probe-specs";
 
-/**
- * Live ACP registry access. `/agents/search` is public, so browsing real
- * counterparties needs no credentials — only placing jobs does.
- *
- *   GET /api/registry?q=data          → raw search
- *   GET /api/registry?plan=1          → the probe plan with its true cost
- */
+/** Live ACP registry access. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
 
@@ -47,7 +41,7 @@ export async function GET(req: Request) {
         totalJobs += targets.length * CONSISTENCY_REPEATS;
         plan[category as ProbeCategory] = {
           cost,
-          targets: targets.map(({ spec: _spec, ...rest }) => rest),
+          targets: targets.map((t) => ({ ...t, spec: undefined })),
         };
       }
 
@@ -67,9 +61,7 @@ export async function GET(req: Request) {
       agents = await searchAgents(q, Number(url.searchParams.get("topK") ?? 24));
     } catch (err) {
       if (!(err instanceof RegistryUnavailableError)) throw err;
-      // ACP search is down but the rest of their stack is not — fall back to the
-      // public directory. Live data, fewer fields: no SLA, no deliverable schema,
-      // so grading and probe planning are deliberately withheld in this mode.
+      // ACP search is down but the rest of their stack is not, fall back to the public directory.
       const directory = await searchDirectory(q, Number(url.searchParams.get("topK") ?? 24));
       return NextResponse.json({
         degraded: true,

@@ -129,7 +129,7 @@ export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => voi
               Search is the registry&apos;s own keyword match, so some results are only loosely
               related. <em>Probeable</em> means something is actually for sale, so ghosting,
               lateness and price drift are provable. <em>Schema-strict</em> means the offering
-              publishes a real JSON Schema, so a malformed deliverable is provable too — only
+              publishes a real JSON Schema, so a malformed deliverable is provable too, only
               about a quarter of the market does.
             </p>
             {agents.length === 0 ? (
@@ -184,7 +184,7 @@ export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => voi
                             <span className="text-fg-faint"> · no SLA or schema in this view</span>
                           </>
                         ) : a.offerings.length === 0 ? (
-                          <span className="text-fg-faint">no offerings — nothing to probe</span>
+                          <span className="text-fg-faint">no offerings, nothing to probe</span>
                         ) : cheapest ? (
                           <>
                             {a.offerings.length} offering{a.offerings.length === 1 ? "" : "s"} ·{" "}
@@ -237,7 +237,7 @@ export function RegistryPanel({ onPick }: { onPick?: (agent: PickedAgent) => voi
             </p>
             <p className="text-xs text-fg-faint">
               The plan filters harder than the list above: ≤${MAX_PRICE_USDC}, ≤{MAX_SLA_MINUTES}min
-              SLA, and a real JSON Schema — the strongest evidence, so the first campaign only
+              SLA, and a real JSON Schema, the strongest evidence, so the first campaign only
               buys that. A name in the search results may therefore be absent here.
             </p>
             {Object.entries(plan.plan).map(([category, group]) => (

@@ -1,7 +1,4 @@
-/**
- * Print the probe plan: which agents get probed, what it costs, no spending.
- * Run: node scripts/plan-probes.mjs
- */
+/* Print the probe plan: who gets probed and what it costs. Spends nothing. */
 import { selectTargets, estimateCost } from "../src/lib/registry.ts";
 import {
   PROBE_CATEGORIES,
@@ -15,7 +12,7 @@ let total = 0;
 let jobs = 0;
 let unrated = 0;
 let count = 0;
-/** One agent is probed for one category only, so 15 targets means 15 counterparties. */
+/* One agent is probed for one category only, so 15 targets means 15 counterparties. */
 const claimed = new Set();
 
 for (const [category, keywords] of Object.entries(PROBE_CATEGORIES)) {

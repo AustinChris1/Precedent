@@ -3,12 +3,7 @@
 import { animate, motion, useInView, useMotionValue, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-/**
- * Motion primitives.
- *
- * Everything here degrades to "just show it" under prefers-reduced-motion —
- * the page has to be readable without a single frame of animation.
- */
+/** Motion primitives. */
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -139,11 +134,7 @@ export function Counter({
   const [text, setText] = useState(() => (reduce ? format(to) : format(0)));
 
   useEffect(() => {
-    if (reduce) {
-      setText(format(to));
-      return;
-    }
-    if (!inView) return;
+    if (reduce || !inView) return;
     const controls = animate(value, to, {
       duration: 1.4,
       ease: [0.16, 1, 0.3, 1],
@@ -154,7 +145,7 @@ export function Counter({
 
   return (
     <span ref={ref} className={className}>
-      {text}
+      {reduce ? format(to) : text}
     </span>
   );
 }

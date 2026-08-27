@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Activity, ArrowLeft, CircleAlert, CircleCheck } from "lucide-react";
@@ -26,23 +26,19 @@ export default function ConsolePage() {
   const [tab, setTab] = useState<TabId>("registry");
   const [refreshKey, setRefreshKey] = useState(0);
   const [online, setOnline] = useState<boolean | null>(null);
-  //: a counterparty chosen in Registry, carried into Underwrite and Probe.
-  //: Keyed on the wallet address — that is the identity ACP jobs are paid to,
-  //: so a dossier keyed this way lines up with the job refs we will attach.
+  // : a counterparty chosen in Registry, carried into Underwrite and Probe.
   const [picked, setPicked] = useState<PickedAgent | null>(null);
 
-  const ping = useCallback(async () => {
-    try {
-      await engine.get("health");
-      setOnline(true);
-    } catch {
-      setOnline(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void ping();
-  }, [ping, refreshKey]);
+    let alive = true;
+    engine
+      .get("health")
+      .then(() => alive && setOnline(true))
+      .catch(() => alive && setOnline(false));
+    return () => {
+      alive = false;
+    };
+  }, [refreshKey]);
 
   const refresh = () => setRefreshKey((k) => k + 1);
 
@@ -110,7 +106,7 @@ export default function ConsolePage() {
             <p className="font-medium">The memory engine is not running.</p>
             <p className="mt-1 text-refuse/85">
               Precedent is two processes: this app is the face, the engine holds the memory.
-              Open a second terminal and start it — from <code className="font-mono">web/</code>:
+              Open a second terminal and start it, from <code className="font-mono">web/</code>:
             </p>
             <code className="mt-2 block rounded-lg bg-white/50 px-3 py-2 font-mono text-xs">
               pnpm engine
@@ -139,8 +135,12 @@ export default function ConsolePage() {
               }}
             />
           )}
-          {tab === "probe" && <ProbePanel onDone={refresh} picked={picked} />}
-          {tab === "underwrite" && <UnderwritePanel onDone={refresh} picked={picked} />}
+          {tab === "probe" && (
+            <ProbePanel key={picked?.walletAddress ?? "none"} onDone={refresh} picked={picked} />
+          )}
+          {tab === "underwrite" && (
+            <UnderwritePanel key={picked?.walletAddress ?? "none"} onDone={refresh} picked={picked} />
+          )}
           {tab === "bureau" && <BureauPanel refreshKey={refreshKey} />}
           {tab === "journal" && <JournalPanel refreshKey={refreshKey} />}
         </motion.div>

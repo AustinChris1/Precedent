@@ -1,15 +1,4 @@
-"""Base integration (verified stack #1).
-
-Two on-chain actions, both shown live in the demo:
-  1. USDC settlement for underwriting queries (a plain USDC transfer per report;
-     x402 only if a real 402 flow ships, never as a label)
-  2. journal anchoring — a hash of the COLD journal is posted to Base after
-     each ruling, so any counterparty can verify Precedent has not rewritten
-     history. This is what makes the bureau's memory *credible*, not decorative.
-
-journal_digest() computes the deterministic hash here; the TypeScript side
-(web/, viem) reads it from GET /anchor and submits the Base transaction.
-"""
+"""Base integration (verified stack #1)."""
 
 from __future__ import annotations
 

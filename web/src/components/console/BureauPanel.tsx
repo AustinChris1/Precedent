@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Archive, BookMarked, Eye, RefreshCw, Users } from "lucide-react";
 import { engine } from "@/lib/client";
 import type { AgentRow, CurationReport, Dossier } from "@/lib/engine";
@@ -16,33 +16,36 @@ export function BureauPanel({ refreshKey }: { refreshKey: number }) {
   const [error, setError] = useState<string | null>(null);
   const [curating, setCurating] = useState(false);
 
-  const load = useCallback(async () => {
-    setError(null);
-    try {
-      const [list, wl, ch] = await Promise.all([
-        engine.get<{ agents: AgentRow[]; archived: Record<string, string> }>("agents"),
-        engine.get<{ agents: string[] }>("watchlist"),
-        engine.get<Record<string, unknown>>("charter"),
-      ]);
-      setAgents(list.agents);
-      setArchived(list.archived);
-      setWatch(wl.agents);
-      setCharter(ch);
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }, []);
+  // bumped after a curation run so the panel reloads through the same effect
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    void load();
-  }, [load, refreshKey]);
+    let alive = true;
+    Promise.all([
+      engine.get<{ agents: AgentRow[]; archived: Record<string, string> }>("agents"),
+      engine.get<{ agents: string[] }>("watchlist"),
+      engine.get<Record<string, unknown>>("charter"),
+    ])
+      .then(([list, wl, ch]) => {
+        if (!alive) return;
+        setAgents(list.agents);
+        setArchived(list.archived);
+        setWatch(wl.agents);
+        setCharter(ch);
+        setError(null);
+      })
+      .catch((err: Error) => alive && setError(err.message));
+    return () => {
+      alive = false;
+    };
+  }, [refreshKey, tick]);
 
   async function curate() {
     setCurating(true);
     setError(null);
     try {
       setReport(await engine.post<CurationReport>("curate"));
-      await load();
+      setTick((t) => t + 1);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -109,8 +112,8 @@ export function BureauPanel({ refreshKey }: { refreshKey: number }) {
             ))}
             {report.charter_changed && (
               <p className="sm:col-span-2 lg:col-span-4 text-xs text-brand-soft">
-                The charter rewrote itself. Every future decision — in this session or any
-                other — now uses the new rule.
+                The charter rewrote itself. Every future decision, in this session or any
+                other, now uses the new rule.
               </p>
             )}
           </div>
@@ -190,7 +193,7 @@ export function BureauPanel({ refreshKey }: { refreshKey: number }) {
         </Card>
       </div>
 
-      <Card title="Watchlist" hint="Read from HOT state — a fresh session knows this without scanning." icon={<Eye size={18} />}>
+      <Card title="Watchlist" hint="Read from HOT state, a fresh session knows this without scanning." icon={<Eye size={18} />}>
         {watch.length === 0 ? (
           <Empty>Nobody on probation. Run curation after recording incidents.</Empty>
         ) : (

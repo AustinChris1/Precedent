@@ -1,9 +1,4 @@
-/**
- * Start the Python memory engine from inside web/.
- *
- * The engine is a separate process holding the SQLite memory; the Next app is
- * only its face. Two terminals:  `pnpm engine`  and  `pnpm dev`.
- */
+/* * Start the Python memory engine from inside web/. */
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -15,7 +10,7 @@ const python = existsSync(venv) ? venv : win ? "python" : "python3";
 
 if (!existsSync(venv)) {
   console.warn(
-    `no venv at ${venv} — falling back to "${python}".\n` +
+    `no venv at ${venv}, falling back to "${python}".\n` +
       `if this fails: cd .. && python -m venv .venv && .venv/Scripts/pip install -r requirements.txt`,
   );
 }

@@ -1,29 +1,6 @@
 import Image from "next/image";
-import credits from "../../public/img/credits.json";
 
-/**
- * Photographs, treated.
- *
- * The source images are warm wood-and-brass archive interiors — the right
- * subject, the wrong colour for this palette. So they are desaturated and
- * re-tinted with the brand blue: the photograph keeps its texture and depth,
- * but belongs to the page instead of fighting it.
- *
- * All images are CC-licensed and require attribution, which `credits.json`
- * carries and <PhotoCredits /> renders.
- */
-
-type Credit = {
-  name: string;
-  title: string;
-  creator: string;
-  creator_url: string;
-  license: string;
-  license_url: string;
-  source: string;
-};
-
-const CREDITS = credits as Credit[];
+/** Photographs, treated. */
 
 export type PhotoName = "catalog-depth" | "index-department" | "cabinets" | "ledgers";
 

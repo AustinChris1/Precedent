@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Gavel, Quote } from "lucide-react";
 import { engine } from "@/lib/client";
 import type { Decision } from "@/lib/engine";
@@ -20,11 +20,6 @@ export function UnderwritePanel({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // picking a counterparty in Registry fills this form — otherwise the tab
-  // would just navigate and leave a judge staring at an empty field
-  useEffect(() => {
-    if (picked?.walletAddress) setAgentId(picked.walletAddress);
-  }, [picked]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -126,7 +121,7 @@ export function UnderwritePanel({
                 ))}
               </ul>
               <p className="mt-2 text-xs text-fg-faint">
-                Delete the memory layer and this list is empty — with it, the terms above.
+                Delete the memory layer and this list is empty, with it, the terms above.
               </p>
             </div>
           )}

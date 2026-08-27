@@ -1,14 +1,4 @@
-"""Stare decisis, and its limits.
-
-Two rules must hold together, or the product tells two stories:
-
-  1. a harsher ruling on a like job GOVERNS a later, softer decision
-  2. it is DISTINGUISHED the moment new evidence arrives
-
-In one line: **time alone never rehabilitates; delivering does.** Waiting out the
-decay curve must not quietly upgrade a counterparty's terms, but clean deliveries
-must be able to — otherwise the decay curve and the ruling contradict each other.
-"""
+"""Stare decisis, and its limits."""
 
 from __future__ import annotations
 
@@ -107,7 +97,7 @@ def test_precedent_only_binds_the_agent_it_was_about():
 
 
 def test_being_unknown_is_not_a_ruling():
-    """`probe_first` means unknown, not bad — it must never cap a later decision."""
+    """`probe_first` means unknown, not bad, it must never cap a later decision."""
     with tempfile.TemporaryDirectory() as tmp:
         db = os.path.join(tmp, "memory.db")
         m = PrecedentMemory(db)
@@ -156,7 +146,6 @@ def test_an_unrelated_job_is_not_bound():
         assert other["decision"] != "refuse", other
         assert not other.get("precedents"), "an unrelated case must not bind"
         m2.close()
-
 
 if __name__ == "__main__":
     test_time_alone_does_not_rehabilitate()

@@ -59,7 +59,7 @@ const STACK = [
 ];
 
 const WORKING = [
-  "Live ACP registry — real agents, prices, SLAs",
+  "Live ACP registry, real agents, prices, SLAs",
   "Grading against a provider's own contract",
   "Five-tier memory, dossiers, self-rewriting rules",
   "Three proofs you can run in 30 seconds",
@@ -121,7 +121,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ------------------------------------------------------- hero overlay */}
       <section className="px-4 pt-4 sm:px-6">
         <div
           ref={heroRef}
@@ -221,7 +220,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------------- how */}
       <section id="how" className="mx-auto max-w-6xl px-6 py-28">
         <Reveal>
           <h2 className="font-display text-3xl tracking-tight sm:text-5xl">How it works</h2>
@@ -241,7 +239,6 @@ export default function Home() {
         </Stagger>
       </section>
 
-      {/* ------------------------------------------------------------- memory */}
       <section id="memory" className="mx-auto max-w-6xl px-6 py-16">
         <Reveal>
           <h2 className="font-display text-3xl tracking-tight sm:text-5xl">
@@ -267,7 +264,6 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* -------------------------------------------------------------- stack */}
       <section className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <h2 className="text-center font-display text-3xl tracking-tight sm:text-5xl">
@@ -286,7 +282,6 @@ export default function Home() {
         </Stagger>
       </section>
 
-      {/* ------------------------------------------------------------- status */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <Reveal>
           <h2 className="font-display text-3xl tracking-tight sm:text-5xl">
@@ -322,7 +317,6 @@ export default function Home() {
         </Stagger>
       </section>
 
-      {/* ---------------------------------------------------------------- cta */}
       <section className="mx-auto max-w-6xl px-6 py-28">
         <Reveal>
           <div className="glass rounded-3xl px-8 py-20 text-center sm:px-16">

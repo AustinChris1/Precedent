@@ -1,17 +1,4 @@
-/**
- * Virtuals ACP integration (verified stack #2) — the probe runner.
- *
- * Precedent hires live agents for small real jobs, watches what actually
- * happens, and writes the outcome to memory. Those probe results are the
- * proprietary data the whole product is priced on.
- *
- * API surface matches @virtuals-protocol/acp-node-v2@0.1.12:
- *   AcpAgent.create(...)  agent.browseAgents(keyword, params)
- *   JobSession: setBudget() -> fund() -> (provider submits) -> complete()/reject()
- *
- * Credentials arrive with the kickoff email (Sep 1); wired Sep 2 in sandbox,
- * where jobs need no gas and services are priced at $0.01.
- */
+/** Virtuals ACP integration (verified stack #2), the probe runner. */
 
 import { gradeProbe, type ProbeOutcome } from "./engine.ts";
 import { classify, type ProbeObservation, type ProbeSpec } from "./probe-grading.ts";

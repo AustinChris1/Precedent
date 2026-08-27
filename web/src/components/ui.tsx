@@ -108,7 +108,7 @@ const BAND_STYLES: Record<Band, { label: string; className: string }> = {
   guarded: { label: "Guarded", className: "text-guarded border-guarded/35 bg-guarded/10" },
   restricted: { label: "Restricted", className: "text-restricted border-restricted/35 bg-restricted/10" },
   refuse: { label: "Refuse", className: "text-refuse border-refuse/35 bg-refuse/10" },
-  probe_first: { label: "No history — probe first", className: "text-unknown border-unknown/35 bg-unknown/10" },
+  probe_first: { label: "No history, probe first", className: "text-unknown border-unknown/35 bg-unknown/10" },
 };
 
 export function BandBadge({ band }: { band: Band }) {

@@ -1,11 +1,4 @@
-"""Dynamic-storage proofs: memory that reorganizes itself between sessions.
-
-1. dormant counterparties are demoted out of the hot path (WARM -> ARCHIVE)
-2. a counterparty that resurfaces is promoted back WITH its history — the part
-   that would silently break, since archived entities are unreadable
-3. the REFERENCE charter rewrites itself from journal evidence, and the new
-   rule survives into a fresh session and changes what it decides
-"""
+"""Dynamic-storage proofs: memory that reorganizes itself between sessions."""
 
 from __future__ import annotations
 
@@ -48,7 +41,7 @@ def test_dormant_is_archived_and_resurfacing_restores_history():
         assert "agent-old" in m.archived_index()
         m.close()
 
-        # --- it comes back, in a fresh session --------------------------------
+        # it comes back, in a fresh session
         m2 = PrecedentMemory(db)
         grade_probe(m2, "agent-old", "delivered", "clean job after a long absence")
 
@@ -80,7 +73,7 @@ def test_charter_rewrites_itself_and_the_rule_persists():
         assert "bad-0" in report.watchlist
         m.close()
 
-        # --- fresh session inherits the learned rule --------------------------
+        # fresh session inherits the learned rule
         m2 = PrecedentMemory(db)
         charter = m2.charter()
         assert charter["baseline_trust"] == report.baseline_after
@@ -92,7 +85,6 @@ def test_charter_rewrites_itself_and_the_rule_persists():
         decision = Underwriter(m2).underwrite("bad-0", 500.0, "data job")
         assert decision["decision"] in ("restricted", "refuse")
         m2.close()
-
 
 if __name__ == "__main__":
     test_dormant_is_archived_and_resurfacing_restores_history()

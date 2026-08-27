@@ -1,6 +1,6 @@
 "use client";
 
-/** Browser-side fetch helpers. All engine traffic goes through /api/engine/*. */
+/** Browser-side fetch helpers. */
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {

@@ -1,13 +1,4 @@
-"""Risk scoring with time decay and rehabilitation.
-
-Trust starts at the charter baseline and moves with each incident, weighted by
-exponential decay (half-life from the charter). Recent behavior dominates, so a
-counterparty with old breaches and recent clean deliveries earns its way back —
-rehabilitation is a property of the math, not a special case.
-
-Fail-closed: without a memory layer there is no dossier, and without a dossier
-the underwriter will not quote beyond the probe cap. Memory is the product.
-"""
+"""Risk scoring with time decay and rehabilitation."""
 
 from __future__ import annotations
 
@@ -33,16 +24,13 @@ def trust_score(incidents: list[dict[str, Any]], charter: dict[str, Any]) -> flo
         score += float(inc["severity"]) * weight
     return max(0.0, min(100.0, score))
 
-
 #: Words that carry no job identity, so paraphrases still match.
 _STOPWORDS = frozenset(
     "a an and for from in into of on or the to with job task work part parts "
     "please need needs required using via my our your".split()
 )
 
-#: Share of significant words two job descriptions must have in common to count
-#: as the same kind of case. Deliberately generous: a missed bind is a quiet
-#: softening, which is the failure mode this feature exists to prevent.
+# Share of significant words two job descriptions must have in common to count as the same kind of case.
 JOB_MATCH_THRESHOLD = 0.45
 
 
@@ -52,7 +40,7 @@ def job_tokens(description: str) -> frozenset[str]:
 
 
 def similar_jobs(a: str, b: str) -> bool:
-    """Jaccard overlap of significant words — a paraphrase of the same job matches."""
+    """Jaccard overlap of significant words, a paraphrase of the same job matches."""
     ta, tb = job_tokens(a), job_tokens(b)
     if not ta or not tb:
         return False
@@ -80,7 +68,7 @@ class Underwriter:
                 "decision": "probe_first",
                 "trust": None,
                 "max_amount_usdc": charter["probe_cap_usdc"],
-                "reason": "no history on record — unknown counterparties are capped at probe size",
+                "reason": "no history on record, unknown counterparties are capped at probe size",
                 "basis": [],
             }
         else:
@@ -101,14 +89,8 @@ class Underwriter:
                 ],
             }
 
-        # --- stare decisis, with vacatur -------------------------------------
-        # A harsher ruling on a like job governs this one *while the facts it
-        # rested on still stand*. The moment new evidence arrives about this
-        # counterparty, the old ruling is distinguished and the score governs
-        # again. In one line: **time alone never rehabilitates; delivering does.**
-        #
-        # Without the vacatur half, this would be a one-way ratchet that makes
-        # rehabilitation impossible and contradicts the decay curve.
+        # stare decisis, with vacatur
+        # A harsher ruling on a like job governs this one *while the facts it rested on still stand*.
         incident_count = len(dossier["body"].get("incidents", [])) if dossier else 0
         bound_by = self._apply_precedent(agent_id, job_description, decision, incident_count)
 
@@ -141,16 +123,8 @@ class Underwriter:
         decision: dict[str, Any],
         incident_count: int,
     ) -> str | None:
-        """Tighten `decision` to the strictest *still-standing* ruling on a like job.
-
-        A ruling is **distinguished** — it does not bind — once the counterparty
-        has produced evidence the ruling never saw. That is what keeps
-        rehabilitation real: delivering cleanly moves the terms, waiting does not.
-
-        Returns the name of the binding ruling, or None when none applies.
-        """
-        # "probe_first" means *unknown*, not *bad*, so it is never part of the
-        # ratchet — a stranger's first quote must not cap them forever.
+        """Tighten `decision` to the strictest *still-standing* ruling on a like job."""
+        # "probe_first" means unknown, not bad, so it never joins the ratchet
         strictness = {"standard": 0, "guarded": 1, "restricted": 2, "refuse": 3}
         here = strictness.get(decision["decision"], 0)
 
@@ -185,12 +159,7 @@ class Underwriter:
         return binding["name"]
 
     def _candidate_rulings(self, agent_id: str, job_description: str) -> list[dict[str, Any]]:
-        """Rulings that might bind: FTS hits, plus this agent's own rulings.
-
-        FTS5 retrieval is cheap and stays on the critical path, but free-text
-        search is not a job taxonomy — a paraphrase can miss. Union it with a
-        direct listing so a bind never depends on how the caller worded the job.
-        """
+        """Rulings that might bind: FTS hits, plus this agent's own rulings."""
         found = {r.get("name"): r for r in self.memory.find_precedents(job_description, limit=20)}
         for row in self.memory.rulings_for(agent_id):
             found.setdefault(row.get("name"), row)

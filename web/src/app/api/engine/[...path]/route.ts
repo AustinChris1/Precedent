@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
 
-/**
- * Thin proxy to the Python memory engine.
- *
- * One route instead of eight: the console needs every engine capability
- * reachable from the browser, and the engine's API key must never reach the
- * client. Only the paths below are forwarded, so the proxy cannot be used to
- * reach anything else on the engine host.
- */
+/** Thin proxy to the Python memory engine. */
 
 const ENGINE_URL = process.env.ENGINE_URL ?? "http://127.0.0.1:8787";
 

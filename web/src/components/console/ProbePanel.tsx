@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, FlaskConical, ScanLine, X } from "lucide-react";
 import { engine, api } from "@/lib/client";
 import type { ProbeOutcome } from "@/lib/engine";
@@ -30,7 +30,7 @@ type ClassifyResult = {
   };
 };
 
-/** Grade a deliverable against a published contract — the rule, run live. */
+/** Grade a deliverable against a published contract, the rule, run live. */
 function Grader() {
   const [deliverable, setDeliverable] = useState('{"result": {"price": 101.2}}');
   const [schema, setSchema] = useState(SAMPLE_SCHEMA);
@@ -88,7 +88,7 @@ function Grader() {
   return (
     <Card
       title="Grade against the published contract"
-      hint="A breach is never our opinion — it is the agent failing the terms it published itself."
+      hint="A breach is never our opinion, it is the agent failing the terms it published itself."
       icon={<ScanLine size={18} />}
     >
       <div className="grid gap-4 lg:grid-cols-2">
@@ -152,7 +152,7 @@ function Grader() {
             {CHECKS.map(([label, ok]) => (
               <li key={label} className="flex items-center gap-2 text-sm text-fg-muted">
                 {ok === null ? (
-                  <span className="text-fg-faint">—</span>
+                  <span className="text-fg-faint">, </span>
                 ) : ok ? (
                   <Check size={14} className="text-standard" />
                 ) : (
@@ -183,9 +183,6 @@ function Recorder({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (picked?.walletAddress) setAgentId(picked.walletAddress);
-  }, [picked]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -193,8 +190,7 @@ function Recorder({
     setError(null);
     setStatus(null);
     try {
-      // no job_ref: only the probe runner may attach one, and the engine
-      // enforces that regardless of what the browser sends
+      // no job_ref: only the probe runner may attach one, and the engine enforces that regardless of what the.
       await engine.post("grade", { agent_id: agentId, outcome, note });
       setStatus(`recorded ${outcome} for ${agentId}`);
       setNote("");
@@ -208,7 +204,7 @@ function Recorder({
 
   return (
     <Card
-      title="Record a probe outcome — admin override"
+      title="Record a probe outcome, admin override"
       hint="Normally written by the ACP probe runner from a real job. Exposed here so the memory path is testable before live jobs land; entries made by hand carry no job reference."
       icon={<FlaskConical size={18} />}
     >
@@ -238,7 +234,7 @@ function Recorder({
             placeholder="40% corrupted rows in milestone 2"
           />
         </Field>
-        <Field label="Job reference" hint="Only the ACP probe runner can attach one — hand entries are stored without evidence and marked [manual entry].">
+        <Field label="Job reference" hint="Only the ACP probe runner can attach one, hand entries are stored without evidence and marked [manual entry].">
           <Input value="" disabled placeholder="probe runner only" />
         </Field>
         <div className="sm:col-span-2">
