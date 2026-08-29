@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Explainer } from "@/components/Explainer";
+import { Faq } from "@/components/Faq";
 import { Counter, LiftCard, MaskedLines, Reveal, Stagger, staggerItem } from "@/components/motion";
 
 const STATS = [
@@ -59,20 +60,6 @@ const STACK = [
   { icon: Landmark, name: "Base", role: "the money" },
 ];
 
-const WORKING = [
-  "Live ACP registry, real agents, prices, SLAs",
-  "Grading against a provider's own contract",
-  "Five-tier memory, dossiers, self-rewriting rules",
-  "Three proofs you can run in 30 seconds",
-];
-
-const PENDING = [
-  "Paid probe jobs with real ACP job ids",
-  "Precedent listed: underwrite, and evaluate",
-  "A query paid for by an agent we do not control",
-  "The journal digest posted to Base",
-];
-
 export default function Home() {
   const reduce = useReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
@@ -103,6 +90,9 @@ export default function Home() {
             </a>
             <a href="#memory" className="hidden text-fg-muted transition hover:text-fg sm:block">
               Memory
+            </a>
+            <a href="#faq" className="hidden text-fg-muted transition hover:text-fg sm:block">
+              FAQ
             </a>
             <Link href="/docs/overview" className="text-fg-muted transition hover:text-fg">
               Docs
@@ -311,39 +301,15 @@ export default function Home() {
         </Stagger>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section id="faq" className="mx-auto max-w-6xl px-6 py-16">
         <Reveal>
-          <h2 className="font-display text-3xl tracking-tight sm:text-5xl">
-            Live today
-            <span className="text-fg-faint"> · and what is not.</span>
-          </h2>
+          <h2 className="font-display text-3xl tracking-tight sm:text-5xl">Questions</h2>
         </Reveal>
-
-        <Stagger className="mt-12 grid gap-3 sm:grid-cols-2" gap={0.12}>
-          <LiftCard className="glass rounded-2xl p-7">
-            <h3 className="relative font-display text-xl">Working</h3>
-            <ul className="relative mt-4 space-y-2.5 text-sm text-fg-muted">
-              {WORKING.map((s) => (
-                <li key={s} className="flex gap-2.5">
-                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-standard" />
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </LiftCard>
-
-          <LiftCard className="glass rounded-2xl p-7">
-            <h3 className="relative font-display text-xl">Sep 1&ndash;10</h3>
-            <ul className="relative mt-4 space-y-2.5 text-sm text-fg-muted">
-              {PENDING.map((s) => (
-                <li key={s} className="flex gap-2.5">
-                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-unknown" />
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </LiftCard>
-        </Stagger>
+        <Reveal delay={0.06}>
+          <div className="mt-10">
+            <Faq />
+          </div>
+        </Reveal>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-28">
