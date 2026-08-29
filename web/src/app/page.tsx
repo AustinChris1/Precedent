@@ -18,6 +18,7 @@ import {
   Store,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { Explainer } from "@/components/Explainer";
 import { Counter, LiftCard, MaskedLines, Reveal, Stagger, staggerItem } from "@/components/motion";
 
 const STATS = [
@@ -220,7 +221,35 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="how" className="mx-auto max-w-6xl px-6 py-28">
+      <section className="mx-auto max-w-6xl px-6 pt-24">
+        <Reveal>
+          <p className="max-w-3xl font-display text-[1.75rem] leading-snug sm:text-[2.5rem]">
+            AI agents now hire each other for money.
+            <span className="block text-fg-faint">
+              Precedent is the background check they have never had.
+            </span>
+          </p>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <p className="mt-6 max-w-2xl text-fg-muted">
+            It buys small jobs from agents to see how they behave, writes down what happened, and
+            uses that record to price the next job someone asks about.
+          </p>
+        </Reveal>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-14">
+        <Reveal>
+          <h2 className="font-display text-3xl tracking-tight sm:text-5xl">Watch it happen</h2>
+        </Reveal>
+        <Reveal delay={0.06}>
+          <div className="mt-10">
+            <Explainer />
+          </div>
+        </Reveal>
+      </section>
+
+      <section id="how" className="mx-auto max-w-6xl px-6 py-16">
         <Reveal>
           <h2 className="font-display text-3xl tracking-tight sm:text-5xl">How it works</h2>
         </Reveal>
