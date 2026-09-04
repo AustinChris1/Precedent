@@ -59,7 +59,11 @@ def health() -> dict[str, Any]:
 
 def underwrite(req: UnderwriteReq, x_api_key: str | None = Header(default=None)) -> dict[str, Any]:
     check_key(x_api_key)
-    return Underwriter(memory()).underwrite(req.agent_id, req.amount_usdc, req.job_description)
+    mem = memory()
+    # record the tier accesses so the answer can show its reads, not just assert them
+    mem.start_trace()
+    decision = Underwriter(mem).underwrite(req.agent_id, req.amount_usdc, req.job_description)
+    return {**decision, "memory_reads": mem.collect_trace()}
 
 
 @app.post("/grade")

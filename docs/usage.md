@@ -92,7 +92,10 @@ Ask what terms a counterparty deserves.
 2. Go to **Probe**, record two bad outcomes for `test-agent`.
 3. Come back and underwrite `test-agent` for 1000 → **Restricted** or **Refuse**,
    with 0% upfront and collateral demanded.
-4. Read **Recalled from memory**: the specific incidents behind the terms.
+4. Watch **Memory, read live**: every call the engine made against Sibyl Memory to answer,
+   in order, with the tier it hit. On step 1 the row `counterparty/brand-new-agent` reads
+   *not on file*, and that miss is why it refuses. On step 3 the same row is a hit.
+5. Read **Recalled from memory**: the specific incidents behind the terms.
 
 **The proof:** step 1 and step 3 are the same question. The only thing that changed
 is what the system remembers.

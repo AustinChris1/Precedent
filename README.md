@@ -24,6 +24,7 @@ Every underwriting decision is impossible without Sibyl Memory. The critical pat
 python tests/test_deletion.py    # the gate: delete memory, the product dies
 python tests/test_curation.py    # dynamic storage: tiers migrate, rules rewrite themselves
 python tests/test_precedent.py   # stare decisis: a past ruling binds a later, softer one
+python tests/test_trace.py       # the read receipt reports real hits, misses and tiers
 ```
 
 It records real-shaped incidents in session 1, proves a *fresh* session flips its financial terms from recalled specifics, then deletes `memory.db` and proves the core function breaks.

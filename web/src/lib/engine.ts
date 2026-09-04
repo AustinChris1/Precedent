@@ -16,6 +16,19 @@ export type Incident = {
   job_ref: string | null;
 };
 
+/** One tier access the engine made while answering. Shown, not claimed. */
+export type MemoryRead = {
+  seq: number;
+  op: string;
+  tier: string;
+  intent: string;
+  mode: "read" | "write";
+  target: string;
+  hit: boolean;
+  count: number | null;
+  ms: number;
+};
+
 export type Band = "standard" | "guarded" | "restricted" | "refuse" | "probe_first";
 
 export type Decision = {
@@ -31,6 +44,8 @@ export type Decision = {
   /** Recalled incidents that justify these terms, the load-bearing part. */
   basis: string[];
   precedents?: string[];
+  /** The read receipt: every tier the engine touched to produce this. */
+  memory_reads?: MemoryRead[];
 };
 
 export type Dossier =

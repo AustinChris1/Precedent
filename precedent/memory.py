@@ -8,6 +8,8 @@ from typing import Any
 
 from sibyl_memory_client import MemoryClient, NotFoundError
 
+from .trace import TracingClient
+
 COUNTERPARTY = "counterparty"
 RULING = "ruling"
 CHARTER_KEY = "underwriting_charter"
@@ -33,9 +35,16 @@ def utcnow_iso() -> str:
 
 class PrecedentMemory:
     def __init__(self, db_path: str = "~/.sibyl-memory/memory.db") -> None:
-        self.client = MemoryClient.local(db_path)
+        self.client = TracingClient(MemoryClient.local(db_path))
         if self.client.get_reference(CHARTER_KEY) is None:
             self.client.set_reference(CHARTER_KEY, DEFAULT_CHARTER)
+
+    def start_trace(self) -> None:
+        """Begin recording tier accesses, so a decision can show its reads."""
+        self.client.start()
+
+    def collect_trace(self) -> list[dict[str, Any]]:
+        return self.client.collect()
 
     def close(self) -> None:
         storage = getattr(self.client, "_storage", None) or getattr(self.client, "storage", None)
